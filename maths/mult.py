@@ -38,6 +38,7 @@ class MultInfo(info.ModuleInfo):
     def make_interface(self):
         assert(self.top_level)
         wires_in = (
+            ('reset', signal.std_logic_type),
             ('a_tdata', signal.StdLogicVector(width=self.width_A)),
             ('a_tlast', signal.std_logic_type),
             ('a_tvalid', signal.std_logic_type),
@@ -53,7 +54,7 @@ class MultInfo(info.ModuleInfo):
             ('p_tlast', signal.std_logic_type),
             ('p_tvalid', signal.std_logic_type),
         )
-        iface = interface.Interface(wires_in, wires_out, takes_clock=True, takes_reset=True)
+        iface = interface.Interface(wires_in, wires_out, takes_clock=True)
         return iface
 
     def get_my_files(self, directory):

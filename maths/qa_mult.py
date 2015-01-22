@@ -42,6 +42,7 @@ class TestMult(unittest.TestCase):
         wait_data = []
         for wait_index in range(n_wait_lines):
             input_d = {
+                'reset': 1,
                 'a_tdata': 0,
                 'a_tlast': 0,
                 'a_tvalid': 0,
@@ -64,6 +65,7 @@ class TestMult(unittest.TestCase):
             sp = sa * sb
             p = signal.sint_to_uint(sp, width_P)
             input_d = {
+                'reset': 0,
                 'a_tdata': a,
                 'a_tlast': 1,
                 'a_tvalid': 1,
@@ -72,23 +74,13 @@ class TestMult(unittest.TestCase):
                 'b_tvalid': 1,
                 'p_tready': 1,
             }
-            if data_index == 0:
-                # The first input seems to be buggy
-                expected_d = {
-                    'a_tready': 1,
-                    'b_tready': 1,
-                    'p_tdata': 0,
-                    'p_tlast': None,
-                    'p_tvalid': 1,
-                }
-            else:
-                expected_d = {
-                    'a_tready': 1,
-                    'b_tready': 1,
-                    'p_tdata': p,
-                    'p_tlast': 1,
-                    'p_tvalid': 1,
-                }
+            expected_d = {
+                'a_tready': 1,
+                'b_tready': 1,
+                'p_tdata': p,
+                'p_tlast': 1,
+                'p_tvalid': 1,
+            }
             input_data.append(input_d)
             expected_data.append(expected_d)
 
