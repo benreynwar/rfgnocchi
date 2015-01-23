@@ -2,70 +2,64 @@ import os
 import logging
 import testfixtures
 
-from pyvivado import interface, signal, info
+from pyvivado import interface, signal, builder
 
 from rfgnocchi import config
 
 logger = logging.getLogger(__name__)
 
-class MultInfo(info.ModuleInfo):
+class MultBuilder(builder.Builder):
 
-    dut_name = 'Mult'
-
-    def __init__(self, params, top_level=False):
-        self.interface_packages = []
-        if top_level:
-            self.width_A = int(params['top']['width_A'])
-            self.width_B = int(params['top']['width_B'])
-            self.width_P = int(params['top']['width_P'])
-            self.drop_top_P = int(params['top']['drop_top_P'])
-            self.latency = int(params['top']['latency'])
-            self.cascade_out = int(params['top']['cascade_out'])
-        super().__init__(params=params, top_level=top_level)
-        if self.top_level:
-            self.dut_parameters = {
-                'WIDTH_A': self.width_A,
-                'WIDTH_B': self.width_B,
-                'WIDTH_P': self.width_P,
-                'DROP_TOP_P': self.drop_top_P,
-                'LATENCY': self.latency,
-                'CASCADE_OUT': self.cascade_out,
-            }
-
-    def make_dependencies(self):
-        return []
-
-    def make_interface(self):
-        assert(self.top_level)
-        wires_in = (
-            ('reset', signal.std_logic_type),
-            ('a_tdata', signal.StdLogicVector(width=self.width_A)),
-            ('a_tlast', signal.std_logic_type),
-            ('a_tvalid', signal.std_logic_type),
-            ('b_tdata', signal.StdLogicVector(width=self.width_B)),
-            ('b_tlast', signal.std_logic_type),
-            ('b_tvalid', signal.std_logic_type),
-            ('p_tready', signal.std_logic_type),
-        )
-        wires_out = (
-            ('a_tready', signal.std_logic_type),
-            ('b_tready', signal.std_logic_type),
-            ('p_tdata', signal.StdLogicVector(width=self.width_P)),
-            ('p_tlast', signal.std_logic_type),
-            ('p_tvalid', signal.std_logic_type),
-        )
-        iface = interface.Interface(wires_in, wires_out, takes_clock=True)
-        return iface
-
-    def get_my_files(self, directory):
-        filenames = [
+    def __init__(self, params={}):
+        super().__init__(params)
+        self.simple_filenames = [
             os.path.join(config.ettus_rfnocdir, 'mult.v'),
             os.path.join(config.ettus_rfnocdir, 'axi_pipe_join.v'),
             os.path.join(config.ettus_rfnocdir, 'axi_pipe.v'),
             os.path.join(config.ettus_rfnocdir, 'axi_join.v'),
         ]
-        interface_filenames = []
-        return filenames, interface_filenames
 
-assert(MultInfo.dut_name not in info.module_register)
-info.module_register[MultInfo.dut_name] = MultInfo
+def get_mult_interface(params):
+    module_name = 'Mult'
+    width_A = params['width_A']
+    width_B = params['width_B']
+    width_P = params['width_P']
+    drop_top_P = params['drop_top_P']
+    latency = params['latency']
+    cascade_out = params['cascade_out']
+    builder = MultBuilder()
+    packages = []
+    module_parameters = {
+        'WIDTH_A': width_A,
+        'WIDTH_B': width_B,
+        'WIDTH_P': width_P,
+        'DROP_TOP_P': drop_top_P,
+        'LATENCY': latency,
+        'CASCADE_OUT': cascade_out,
+    }
+    wires_in = (
+        ('reset', signal.std_logic_type),
+        ('a_tdata', signal.StdLogicVector(width=width_A)),
+        ('a_tlast', signal.std_logic_type),
+        ('a_tvalid', signal.std_logic_type),
+        ('b_tdata', signal.StdLogicVector(width=width_B)),
+        ('b_tlast', signal.std_logic_type),
+        ('b_tvalid', signal.std_logic_type),
+        ('p_tready', signal.std_logic_type),
+    )
+    wires_out = (
+        ('a_tready', signal.std_logic_type),
+        ('b_tready', signal.std_logic_type),
+        ('p_tdata', signal.StdLogicVector(width=width_P)),
+        ('p_tlast', signal.std_logic_type),
+        ('p_tvalid', signal.std_logic_type),
+    )
+    iface = interface.Interface(
+        wires_in, wires_out, module_name=module_name,
+        parameters=params, module_parameters=module_parameters,
+        packages=packages, builder=builder, clock_name='clk')
+    return iface
+
+
+assert('Mult' not in interface.module_register)
+interface.module_register['Mult'] = get_mult_interface

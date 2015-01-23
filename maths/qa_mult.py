@@ -27,14 +27,14 @@ class TestMult(unittest.TestCase):
         width_B = 18
         width_P = 48
 
-        params = {'top': {
+        params = {
             'width_A': width_A,
             'width_B': width_B,
             'width_P': width_P,
             'drop_top_P': 0,
             'latency': 3,
             'cascade_out': 0,
-        }}
+        }
 
         # Make wait data.  Sent while initialising.
         n_data = 10
@@ -84,9 +84,9 @@ class TestMult(unittest.TestCase):
             input_data.append(input_d)
             expected_data.append(expected_d)
 
-        info = mult.MultInfo(params=params, top_level=True)
+        interface = mult.get_mult_interface(params)
         p = project.FileTestBenchProject.create(
-            info=info, directory=directory,
+            interface=interface, directory=directory,
             board=config.default_board,
             part=config.default_part,
         )
