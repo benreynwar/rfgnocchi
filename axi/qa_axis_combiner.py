@@ -37,8 +37,12 @@ class TestAxiPipe(unittest.TestCase):
         n_wait_lines = 20
         wait_data = []
         for wait_index in range(n_wait_lines):
+            if wait_index == 10:
+                aresetn = 0
+            else:
+                aresetn = 1
             input_d = {
-                'a_resetn': 0,
+                'aresetn': aresetn,
                 's_axis_tdata': signal.list_of_uints_to_uint(
                     [0, 0, 0], input_stream_width),
                 's_axis_tlast': signal.list_of_uints_to_uint(
@@ -51,11 +55,14 @@ class TestAxiPipe(unittest.TestCase):
         # Make input and expected data
         input_data = []
         expected_data = []
+        
         for data_index in range(n_data):
+            t_data = [random.randint(0, pow(2, input_stream_width)-1)
+                      for i in range(n_input_streams)]
             input_d = {
-                'a_resetn': 1,
+                'aresetn': 1,
                 's_axis_tdata': signal.list_of_uints_to_uint(
-                    [3, 4, 5], input_stream_width),
+                    t_data, input_stream_width),
                 's_axis_tlast': signal.list_of_uints_to_uint(
                     [0, 0, 0], 1),
                 's_axis_tvalid': signal.list_of_uints_to_uint(
@@ -64,8 +71,8 @@ class TestAxiPipe(unittest.TestCase):
             }
             expected_d = {
                 'm_axis_tdata': input_d['s_axis_tdata'],
-                'm_axis_tlast': input_d['s_axis_tlast'],
-                'm_axis_tvalid': input_d['s_axis_tvalid'],
+                'm_axis_tlast': 0,
+                'm_axis_tvalid': 1,
                 's_axis_tready': signal.list_of_uints_to_uint(
                     [1, 1, 1], 1),
             }
