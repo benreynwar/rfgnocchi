@@ -53,7 +53,7 @@ def get_axis_combiner_interface(params):
     iface = interface.Interface(
         wires_in, wires_out, module_name=module_name, factory_name=factory_name,
         parameters=params, module_parameters=module_parameters,
-        packages=packages, builder=builder, clock_name='aclk', needs_dummy=True)
+        packages=packages, builder=builder, clock_names=['aclk'], needs_dummy=True)
     return iface
 
 

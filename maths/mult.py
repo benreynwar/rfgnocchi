@@ -57,7 +57,7 @@ def get_mult_interface(params):
     iface = interface.Interface(
         wires_in, wires_out, module_name=module_name,
         parameters=params, module_parameters=module_parameters,
-        packages=packages, builder=builder, clock_name='clk')
+        packages=packages, builder=builder, clock_names=['clk'])
     return iface
 
 
