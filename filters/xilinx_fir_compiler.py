@@ -1,17 +1,12 @@
 import os
 import logging
+import math
 
 from pyvivado import builder, interface, signal
 
 from rfgnocchi import config
 
 logger = logging.getLogger(__name__)
-
-constants = {
-    'coefficient_width': 25,
-    'data_width': 16,
-    'output_width': 48,
-}
 
 class XilinxFirCompilerBuilder(builder.Builder):
     
@@ -57,9 +52,17 @@ def get_xilinx_fir_compiler_interface(params):
         ('m_axis_data_tlast', signal.std_logic_type),
         ('event_s_reload_tlast_missing', signal.std_logic_type),
         ('event_s_reload_tlast_unexpected', signal.std_logic_type),
-        #('m_axis_data_tuser', signal.StdLogicVector(width=1)),
         ('m_axis_data_tdata', signal.StdLogicVector(width=96)),
     )
+    constants = {
+        'coefficient_width': int(builder.ip_params['coefficient_width']),
+        'data_width': int(builder.ip_params['data_width']),
+        'output_width': int(builder.ip_params['output_width']),
+    }        
+    constants['se_data_width'] = sign_extend_to_8_bit_boundary(
+        constants['data_width'])
+    constants['se_output_width'] = sign_extend_to_8_bit_boundary(
+        constants['output_width'])
     iface = interface.Interface(
         wires_in, wires_out, module_name=module_name,
         parameters=params, module_parameters=module_parameters,
@@ -71,7 +74,9 @@ def get_xilinx_fir_compiler_interface(params):
 
 assert('xilinx_fir_compiler' not in interface.module_register)
 interface.module_register['xilinx_fir_compiler'] = get_xilinx_fir_compiler_interface
-    
+
+def sign_extend_to_8_bit_boundary(v):
+    return int(math.ceil(v/8) * 8)
 
 class XilinxFirCompiler(object):
     '''
@@ -84,6 +89,11 @@ class XilinxFirCompiler(object):
 
     def __init__(self, ip_params):
         self.ip_params = ip_params
+        self.data_width = int(ip_params['data_width'])
+        self.coefficient_width = int(ip_params['coefficient_width'])
+        self.output_width = int(ip_params['output_width'])
+        self.se_data_width = sign_extend_to_8_bit_boundary(self.data_width)
+        self.se_output_width = sign_extend_to_8_bit_boundary(self.output_width)
         self.taps = [
             int(v) for v in ip_params['coefficientvector'].split(',')]
         self.n_taps = len(self.taps)
@@ -93,18 +103,33 @@ class XilinxFirCompiler(object):
         self.loading_tap_countdown = None
         
     def reset(self):
-        self.old_values = [0] * self.n_taps
+        self.old_values_A = [0] * self.n_taps
+        self.old_values_B = [0] * self.n_taps
         self.output_pipe = [None] * (self.delay + self.n_taps)
 
     def process(self, inputs):
         if inputs['aresetn'] == 0:
             self.reset()
         if inputs['s_axis_data_tvalid'] == 1:
-            data_tdata = signal.uint_to_sint(
-                inputs['s_axis_data_tdata'], width=constants['data_width'])
-            self.old_values.append(data_tdata)
-            self.old_values.pop(0)
-            new_output_data = sum([t*v for t, v in zip(self.taps, self.old_values)])
+            f_data = pow(2, self.se_data_width)
+            udata_A = inputs['s_axis_data_tdata'] // f_data
+            udata_B = inputs['s_axis_data_tdata'] % f_data
+            sdata_A = signal.uint_to_sint(
+                udata_A, width=self.se_data_width)
+            sdata_B = signal.uint_to_sint(
+                udata_B, width=self.se_data_width)
+            self.old_values_A.append(sdata_A)
+            self.old_values_B.append(sdata_B)
+            self.old_values_A.pop(0)
+            self.old_values_B.pop(0)
+            soutput_A = sum([t*v for t, v in zip(self.taps, self.old_values_A)])
+            soutput_B = sum([t*v for t, v in zip(self.taps, self.old_values_B)])
+            uoutput_A = signal.sint_to_uint(
+                soutput_A, width=self.se_output_width)
+            uoutput_B = signal.sint_to_uint(
+                soutput_B, width=self.se_output_width)
+            f_output = pow(2, self.se_output_width)
+            new_output_data = uoutput_A * f_output + uoutput_B
         else:
             new_output_data = None
         if inputs['s_axis_config_tvalid'] == 1:
@@ -122,7 +147,7 @@ class XilinxFirCompiler(object):
         if inputs['s_axis_reload_tvalid'] == 1:
             reload_tdata = signal.uint_to_sint(
                 inputs['s_axis_reload_tdata'],
-                width=constants['coefficient_width'])
+                width=self.coefficient_width)
             if not self.new_taps_full:
                 self.new_taps.append(reload_tdata)
         self.output_pipe.append(new_output_data)
@@ -132,8 +157,7 @@ class XilinxFirCompiler(object):
             m_axis_data_tdata = 0
         else:
             m_axis_data_tvalid = 1
-            m_axis_data_tdata = signal.sint_to_uint(
-                current_output_data, width=constants['output_width'])
+            m_axis_data_tdata = current_output_data
         if self.new_taps_full:
             s_axis_reload_tready = 0
         else:

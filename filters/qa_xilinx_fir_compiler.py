@@ -32,6 +32,7 @@ class TestXilinxFirCompiler(unittest.TestCase):
         interface = xilinx_fir_compiler.get_xilinx_fir_compiler_interface(params)
         coeff_width = interface.constants['coefficient_width']
         input_width = interface.constants['data_width']
+        se_input_width = interface.constants['se_data_width']
 
         # Make wait data.  Sent while initialising.
         n_data = 10
@@ -61,15 +62,19 @@ class TestXilinxFirCompiler(unittest.TestCase):
         n_data0 = 20
         max_input = pow(2, input_width-1)-1
         min_input = -pow(2, input_width-1)
-        data0 = [random.randint(min_input, max_input)
-                 for i in range(n_data0)]
+        f = pow(2, input_width)
+        data0 = [
+            signal.sint_to_uint(
+                random.randint(min_input, max_input), width=se_input_width) +
+            signal.sint_to_uint(
+                random.randint(min_input, max_input), width=se_input_width)*f                
+            for i in range(n_data0)]
         for d0 in data0:
             input_d = {
                 'aresetn': 1,
                 's_axis_data_tvalid': 1, 
                 's_axis_data_tlast': 0,
-                's_axis_data_tdata': signal.sint_to_uint(
-                    d0, width=input_width),
+                's_axis_data_tdata': d0,
                 's_axis_config_tvalid': 0,
                 's_axis_config_tdata': 0,
                 's_axis_reload_tvalid': 0, 
@@ -135,15 +140,18 @@ class TestXilinxFirCompiler(unittest.TestCase):
         n_data1 = 30
         max_input = pow(2, input_width-1)-1
         min_input = -pow(2, input_width-1)
-        data1 = [random.randint(min_input, max_input)
-                 for i in range(n_data1)]
+        data1 = [
+            signal.sint_to_uint(
+                random.randint(min_input, max_input), width=se_input_width) +
+            signal.sint_to_uint(
+                random.randint(min_input, max_input), width=se_input_width)*f                
+            for i in range(n_data1)]
         for d1 in data1:
             input_d = {
                 'aresetn': 1,
                 's_axis_data_tvalid': 1, 
                 's_axis_data_tlast': 0,
-                's_axis_data_tdata': signal.sint_to_uint(
-                    d1, width=input_width),
+                's_axis_data_tdata': d1,
                 's_axis_config_tvalid': 0,
                 's_axis_config_tdata': 0,
                 's_axis_reload_tvalid': 0, 
