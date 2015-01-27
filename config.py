@@ -2,6 +2,7 @@ import os
 import logging
 
 basedir = os.path.dirname(__file__)
+ettus_fpgadir = os.path.join(basedir, '..', 'fpga', 'usrp3', 'lib')
 ettus_coregendir = os.path.join(basedir, '..', 'fpga', 'usrp3', 'lib', 'coregen')
 ettus_rfnocdir = os.path.join(basedir, '..', 'fpga', 'usrp3', 'lib', 'rfnoc')
 
