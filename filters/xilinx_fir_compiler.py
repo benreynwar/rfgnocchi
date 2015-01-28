@@ -1,6 +1,7 @@
 import os
 import logging
 import math
+from collections import OrderedDict
 
 from pyvivado import builder, interface, signal
 
@@ -14,13 +15,40 @@ class XilinxFirCompilerBuilder(builder.Builder):
         super().__init__(params)
         module_name = params['module_name']
         n_coefficients = params['n_coefficients']
+        decimation_rate = params.get('decimation_rate', 1)
+        if decimation_rate == 1:
+            filter_type = 'Single_Rate'
+        else:
+            filter_type = 'Decimation'
         xco_filename = os.path.join(config.ettus_coregendir, 'simple_fir.xco')
-        self.ip_params = builder.params_from_xco(xco_filename)
-        # Override coefficients so that we get the correct number.
-        # 21 is the xilinx default so this is probably a sensible choice.
-        self.ip_params['coefficientvector'] = '1' + ',1'*(n_coefficients-1)
-        self.ip_params['coefficient_file'] = 'no_coefficient_file_loaded'
-        self.ip_params['coefficientsource'] = 'Vector'
+        old_ip_params = builder.params_from_xco(xco_filename)
+        ip_params = [
+            ('filter_type', filter_type),
+            ('decimation_rate', decimation_rate),
+            ('coefficientsource', 'Vector'),
+            ('coefficientvector', '1,0' + ',0'*(n_coefficients-2)),
+            ('coefficient_file', 'no_coe_file_loaded'),
+        ]
+        new_keys = [p[0] for p in ip_params]
+        for old_param in old_ip_params.items():
+            if old_param[0] not in [
+                    'component_name', 'coefficient_file', 'reset_data_vector',
+                    'columnconfig', 's_config_sync_mode',
+                    # Not sure why I have to remove this but it seems to still
+                    # set coefficients to be signed.
+                    'coefficient_sign', 
+                    # Output width is disabled.
+                    'output_width',
+            ] + new_keys:
+                ip_params.append(old_param)
+        self.ip_params = OrderedDict(ip_params)
+        self.constants = {
+            'output_width': (
+                int(self.ip_params['coefficient_width']) +
+                int(self.ip_params['data_width']) + 
+                signal.logceil(n_coefficients)
+                )
+        }
         self.ips = [
             ('fir_compiler', self.ip_params, module_name),
         ]
@@ -57,7 +85,8 @@ def get_xilinx_fir_compiler_interface(params):
     constants = {
         'coefficient_width': int(builder.ip_params['coefficient_width']),
         'data_width': int(builder.ip_params['data_width']),
-        'output_width': int(builder.ip_params['output_width']),
+        'output_width': int(builder.constants['output_width']),
+        'decimation_rate': int(builder.ip_params['decimation_rate']),
     }        
     constants['se_data_width'] = sign_extend_to_8_bit_boundary(
         constants['data_width'])
@@ -91,21 +120,26 @@ class XilinxFirCompiler(object):
         self.ip_params = ip_params
         self.data_width = int(ip_params['data_width'])
         self.coefficient_width = int(ip_params['coefficient_width'])
-        self.output_width = int(ip_params['output_width'])
+        self.decimation_rate = int(ip_params['decimation_rate'])
         self.se_data_width = sign_extend_to_8_bit_boundary(self.data_width)
-        self.se_output_width = sign_extend_to_8_bit_boundary(self.output_width)
-        self.taps = [
-            int(v) for v in ip_params['coefficientvector'].split(',')]
+        self.taps = list(reversed([
+            int(v) for v in ip_params['coefficientvector'].split(',')]))
         self.n_taps = len(self.taps)
+        self.output_width = (self.data_width + self.coefficient_width +
+                             signal.logceil(self.n_taps))
+        self.se_output_width = sign_extend_to_8_bit_boundary(self.output_width)
         self.reset()
         self.new_taps = []
         self.new_taps_full = False
         self.loading_tap_countdown = None
+        self.decim_counter = 0
         
     def reset(self):
         self.old_values_A = [0] * self.n_taps
         self.old_values_B = [0] * self.n_taps
-        self.output_pipe = [None] * (self.delay + self.n_taps)
+        pipe_length = (self.delay + self.n_taps - (self.decimation_rate-1)//2)
+        self.output_pipe = [None] * pipe_length
+        self.output_pipe_valid = [0] * pipe_length
 
     def process(self, inputs):
         if inputs['aresetn'] == 0:
@@ -136,6 +170,7 @@ class XilinxFirCompiler(object):
             self.loading_tap_countdown = self.n_taps
             self.taps = self.new_taps
             self.new_taps = []
+            self.decim_counter = 0
         else:
             if self.loading_tap_countdown == 0:
                 self.loading_tap_countdown = None
@@ -151,12 +186,19 @@ class XilinxFirCompiler(object):
             if not self.new_taps_full:
                 self.new_taps.append(reload_tdata)
         self.output_pipe.append(new_output_data)
+        if new_output_data is None:
+            new_valid = 0
+        else:
+            self.decim_counter = (self.decim_counter + 1) % self.decimation_rate
+            if self.decim_counter == 0:
+                new_valid = 1
+            else:
+                new_valid = 0
+        self.output_pipe_valid.append(new_valid)
         current_output_data = self.output_pipe.pop(0)
         if current_output_data is None:
-            m_axis_data_tvalid = 0
             m_axis_data_tdata = 0
         else:
-            m_axis_data_tvalid = 1
             m_axis_data_tdata = current_output_data
         if self.new_taps_full:
             s_axis_reload_tready = 0
@@ -166,7 +208,7 @@ class XilinxFirCompiler(object):
             's_axis_data_tready': 1,
             's_axis_config_tready': 1,
             's_axis_reload_tready': s_axis_reload_tready,
-            'm_axis_data_tvalid': m_axis_data_tvalid,
+            'm_axis_data_tvalid': self.output_pipe_valid.pop(0),
             'm_axis_data_tlast': 0,
             'event_s_reload_tlast_missing': 0,
             'event_s_reload_tlast_unexpected': 0,

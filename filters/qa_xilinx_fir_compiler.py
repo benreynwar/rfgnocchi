@@ -14,28 +14,32 @@ from rfgnocchi import config
 
 logger = logging.getLogger(__name__)
 
-class TestXilinxFirCompiler(unittest.TestCase):
-    
-    def test_one(self):
 
+class TestXilinxFirCompiler(unittest.TestCase):
+
+    def test_one(self):
+        n_coefficients = 5
+        params = {
+            'module_name': 'simple_fir',
+            'n_coefficients': n_coefficients,
+            'decimation_rate': 3,
+        }
+        self.helper(params)
+
+    def helper(self, params):
+    
         directory = os.path.abspath('proj_qa_testxilinxfircompiler')
         if os.path.exists(directory):
             shutil.rmtree(directory)
         os.mkdir(directory)
 
-        n_coefficients = 5
-
-        params = {
-            'module_name': 'simple_fir',
-            'n_coefficients': n_coefficients,
-        }
         interface = xilinx_fir_compiler.get_xilinx_fir_compiler_interface(params)
         coeff_width = interface.constants['coefficient_width']
         input_width = interface.constants['data_width']
         se_input_width = interface.constants['se_data_width']
+        decimation_rate = interface.constants['decimation_rate']
 
         # Make wait data.  Sent while initialising.
-        n_data = 10
         n_wait_lines = 20
         wait_data = []
         for wait_index in range(n_wait_lines):
@@ -59,16 +63,17 @@ class TestXilinxFirCompiler(unittest.TestCase):
         # Make input and expected data
         input_data = []
         # Confirm that initially the taps have all '1's entry.
-        n_data0 = 20
+        n_data0 = (20//decimation_rate) * decimation_rate
         max_input = pow(2, input_width-1)-1
         min_input = -pow(2, input_width-1)
         f = pow(2, input_width)
-        data0 = [
-            signal.sint_to_uint(
-                random.randint(min_input, max_input), width=se_input_width) +
-            signal.sint_to_uint(
-                random.randint(min_input, max_input), width=se_input_width)*f                
-            for i in range(n_data0)]
+        #data0 = [
+        #    signal.sint_to_uint(
+        #        random.randint(min_input, max_input), width=se_input_width) +
+        #    signal.sint_to_uint(
+        #        random.randint(min_input, max_input), width=se_input_width)*f*0                
+        #    for i in range(n_data0)]
+        data0 = range(n_data0)
         for d0 in data0:
             input_d = {
                 'aresetn': 1,
@@ -84,11 +89,11 @@ class TestXilinxFirCompiler(unittest.TestCase):
             }
             input_data.append(input_d)
         
-        # Send in the filter coefficients
         max_coeff = pow(2, coeff_width-1)-1
         min_coeff = -pow(2, coeff_width-1)
-        coefficients = [random.randint(min_coeff, max_coeff)
-                       for i in range(n_coefficients)]
+        #coefficients = [random.randint(min_coeff, max_coeff)
+        #                for i in range(params['n_coefficients'])]
+        coefficients = [1] + [0]*params['n_coefficients']
         for i, coeff in enumerate(coefficients):
             # We're assuming that s_axi_reload_tready is always active.
             if i == len(coefficients)-1:
@@ -110,7 +115,7 @@ class TestXilinxFirCompiler(unittest.TestCase):
             }
             input_data.append(input_d)
         # Do nothing for a couple clock cycles
-        for i in range(3):
+        for i in range(2):
             input_data.append({
                 'aresetn': 1,
                 's_axis_data_tvalid': 0, 
@@ -137,15 +142,16 @@ class TestXilinxFirCompiler(unittest.TestCase):
             'm_axis_data_tready': 1,
         })
         # Test new coefficients
-        n_data1 = 30
+        n_data1 = (30//decimation_rate) * decimation_rate
         max_input = pow(2, input_width-1)-1
         min_input = -pow(2, input_width-1)
-        data1 = [
-            signal.sint_to_uint(
-                random.randint(min_input, max_input), width=se_input_width) +
-            signal.sint_to_uint(
-                random.randint(min_input, max_input), width=se_input_width)*f                
-            for i in range(n_data1)]
+        #data1 = [
+        #    signal.sint_to_uint(
+        #        random.randint(min_input, max_input), width=se_input_width) +
+        #    signal.sint_to_uint(
+        #        random.randint(min_input, max_input), width=se_input_width)*f*0                
+        #    for i in range(n_data1)]
+        data1 = range(n_data1)
         for d1 in data1:
             input_d = {
                 'aresetn': 1,
@@ -179,7 +185,7 @@ class TestXilinxFirCompiler(unittest.TestCase):
             part=config.default_part,
         )
         t = p.wait_for_most_recent_task()
-        errors = t.get_errors()
+        errors = t.get_errors_and_warnings()
         self.assertEqual(len(errors), 0)
 
         # Run the simulation
