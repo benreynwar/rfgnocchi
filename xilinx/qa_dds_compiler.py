@@ -201,9 +201,9 @@ class TestXilinxDDSCompiler(unittest.TestCase):
         import pdb
         pdb.set_trace()
 
-        self.assertTrue(abs(phase_change-expected_phase_change) < 1e-6)
-        self.assertTrue(abs(base_phase-phase_0again) < 1e-6)
-        self.assertTrue(abs(phase_step-expected_phase_step) < 1e-6)
+        self.assertTrue(abs(phase_change-expected_phase_change) < 1e-4)
+        self.assertTrue(abs(base_phase-phase_0again) < 1e-4)
+        self.assertTrue(abs(phase_step-expected_phase_step) < 1e-4)
         self.assertEqual(len(errors), 0)
 
     def check_output(self, output_data, expected_data):
