@@ -15,9 +15,10 @@ class NocBlockFirFilterBuilder(builder.Builder):
     def __init__(self, params):
         super().__init__(params)
         module_name = 'noc_block_fir_filter'
+        n_coefficients = 21
         simple_fir_builder = XilinxFirCompilerBuilder({
             'module_name': 'simple_fir',
-            'n_coefficients': 21,
+            'n_coefficients': n_coefficients,
         })
         fifo_short_2clk_builder = FifoGeneratorBuilder({
             'implementation_type': 'independent_clocks_distributed_ram',
@@ -31,6 +32,15 @@ class NocBlockFirFilterBuilder(builder.Builder):
             'depth': 512,
             'module_name': 'fifo_4k_2clk',
         })
+        self.constants = {
+            'n_coefficients': n_coefficients,
+            'coefficient_width': int(
+                simple_fir_builder.ip_params['coefficient_width']),
+            'data_width': int(
+                simple_fir_builder.ip_params['data_width']),
+            'output_width': int(
+                simple_fir_builder.ip_params['output_width']),
+        }        
         self.builders = [
             simple_fir_builder,
             fifo_short_2clk_builder,
@@ -113,6 +123,7 @@ def get_noc_block_fir_filter_interface(params):
     iface = interface.Interface(
         wires_in, wires_out, module_name=module_name,
         parameters=params, builder=builder, clock_names=['ce_clk', 'bus_clk'],
+        constants=builder.constants,
     )
     return iface
 

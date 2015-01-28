@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from pyvivado import builder
 
 class FifoGeneratorBuilder(builder.Builder):
@@ -19,19 +21,19 @@ class FifoGeneratorBuilder(builder.Builder):
         self.width = params['width']
         self.depth = params['depth']
         assert(self.implementation_type in self.implementation_types)
-        self.ip_params = {
-            'fifo_implementation': self.implementation_type,
-            'performance_options': 'first_word_fall_through',
-            'interface_type': 'native',
-            'input_data_width': self.width,
-            'output_data_width': self.width,
-            'input_depth': self.depth,
-            'output_depth': self.depth,
+        self.ip_params = OrderedDict((
+            ('fifo_implementation', self.implementation_type),
+            ('performance_options', 'first_word_fall_through'),
+            ('interface_type', 'native'),
+            ('input_data_width', self.width),
+            ('output_data_width', self.width),
+            ('input_depth', self.depth),
+            ('output_depth', self.depth),
             # These counts seem unused, but they're required so we get
             # the same interface as expected.
-            'read_data_count': 'true',
-            'write_data_count': 'true',
-        }
+            ('read_data_count', 'true'),
+            ('write_data_count', 'true'),
+        ))
         self.ips = (
             ('fifo_generator', self.ip_params, params['module_name']),
         )
