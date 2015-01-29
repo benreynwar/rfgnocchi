@@ -9,7 +9,7 @@ import testfixtures
 from pyvivado import project, signal
 from pyvivado import config as pyvivado_config
 
-from rfgnocchi.maths import mult
+from rfgnocchi.ettus.rfnoc import mult
 from rfgnocchi import config
 
 logger = logging.getLogger(__name__)
@@ -23,15 +23,24 @@ class TestMult(unittest.TestCase):
             shutil.rmtree(directory)
         os.mkdir(directory)
 
-        width_A = 25
-        width_B = 18
-        width_P = 48
+        MAX_WIDTH_A = 25
+        MAX_WIDTH_B = 18
+        MAX_WIDTH_P = 48
+
+        width_A = 20
+        width_B = 13
+        drop_bottom_P = 10
+        zeros_on_A = MAX_WIDTH_A - width_A
+        zeros_on_B = MAX_WIDTH_B - width_B
+        max_width_P = MAX_WIDTH_P - zeros_on_A - zeros_on_B
+        drop_top_P = 6
+        width_P = max_width_P - drop_top_P
 
         params = {
             'width_A': width_A,
             'width_B': width_B,
             'width_P': width_P,
-            'drop_top_P': 0,
+            'drop_top_P': drop_top_P,
             'latency': 3,
             'cascade_out': 0,
         }
@@ -95,7 +104,7 @@ class TestMult(unittest.TestCase):
         self.assertEqual(len(errors), 0)
 
         # Run the simulation
-        runtime = '{} ns'.format((len(input_data) + 20) * 10)
+        runtime = '{} ns'.format((len(wait_data+input_data) + 20) * 10)
         errors, output_data = p.run_hdl_simulation(
             input_data=wait_data+input_data, runtime=runtime)
         latency = 3

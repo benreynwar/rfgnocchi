@@ -8,6 +8,7 @@ from rfgnocchi import config
 
 logger = logging.getLogger(__name__)
 
+
 class MultBuilder(builder.Builder):
 
     def __init__(self, params={}):
@@ -18,6 +19,19 @@ class MultBuilder(builder.Builder):
             os.path.join(config.ettus_rfnocdir, 'axi_pipe.v'),
             os.path.join(config.ettus_rfnocdir, 'axi_join.v'),
         ]
+
+
+class MultRCBuilder(builder.Builder):
+    
+    def __init__(self, params={}):
+        super().__init__(params)
+        self.builders = [
+            MultBuilder(params),
+        ]
+        self.simple_filenames = [
+            os.path.join(config.ettus_rfnocdir, 'mult_rc.v'),
+        ]
+
 
 def get_mult_interface(params):
     module_name = 'Mult'
