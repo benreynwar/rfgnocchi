@@ -5,6 +5,7 @@ import testfixtures
 from pyvivado import interface, signal, builder
 
 from rfgnocchi import config
+from rfgnocchi.ettus.fifo import axi_fifo
 
 logger = logging.getLogger(__name__)
 
@@ -19,5 +20,8 @@ class AxiRoundAndClipComplexBuilder(builder.Builder):
             os.path.join(config.ettus_rfnocdir, 'axi_clip.v'),
             os.path.join(config.ettus_rfnocdir, 'split_complex.v'),
             os.path.join(config.ettus_rfnocdir, 'join_complex.v'),
+        ]
+        self.builders = [
+            axi_fifo.AxiFifoBuilder({}),
         ]
 

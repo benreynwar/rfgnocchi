@@ -9,7 +9,7 @@ from rfgnocchi import config
 
 logger = logging.getLogger(__name__)
 
-class XilinxFirCompilerBuilder(builder.Builder):
+class FirCompilerBuilder(builder.Builder):
     
     def __init__(self, params):
         super().__init__(params)
@@ -54,10 +54,10 @@ class XilinxFirCompilerBuilder(builder.Builder):
         ]
         
 
-def get_xilinx_fir_compiler_interface(params):
+def get_fir_compiler_interface(params):
     factory_name = 'xilinx_fir_compiler'
     module_name = params['module_name']
-    builder = XilinxFirCompilerBuilder(params)
+    builder = FirCompilerBuilder(params)
     packages = []
     module_parameters = {}
     wires_in = (
@@ -102,12 +102,12 @@ def get_xilinx_fir_compiler_interface(params):
 
 
 assert('xilinx_fir_compiler' not in interface.module_register)
-interface.module_register['xilinx_fir_compiler'] = get_xilinx_fir_compiler_interface
+interface.module_register['xilinx_fir_compiler'] = get_fir_compiler_interface
 
 def sign_extend_to_8_bit_boundary(v):
     return int(math.ceil(v/8) * 8)
 
-class XilinxFirCompiler(object):
+class FirCompiler(object):
     '''
     This is a python implementation of the Xilinx Fir Compiler.
     It is nowhere near complete and will only work correctly for the particular

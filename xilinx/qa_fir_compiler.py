@@ -9,13 +9,13 @@ import testfixtures
 from pyvivado import project, signal
 from pyvivado import config as pyvivado_config
 
-from rfgnocchi.filters import xilinx_fir_compiler
+from rfgnocchi.xilinx import fir_compiler
 from rfgnocchi import config
 
 logger = logging.getLogger(__name__)
 
 
-class TestXilinxFirCompiler(unittest.TestCase):
+class TestFirCompiler(unittest.TestCase):
 
     def test_one(self):
         n_coefficients = 5
@@ -28,12 +28,12 @@ class TestXilinxFirCompiler(unittest.TestCase):
 
     def helper(self, params):
     
-        directory = os.path.abspath('proj_qa_testxilinxfircompiler')
+        directory = os.path.abspath('proj_qa_testfircompiler')
         if os.path.exists(directory):
             shutil.rmtree(directory)
         os.mkdir(directory)
 
-        interface = xilinx_fir_compiler.get_xilinx_fir_compiler_interface(params)
+        interface = fir_compiler.get_fir_compiler_interface(params)
         coeff_width = interface.constants['coefficient_width']
         input_width = interface.constants['data_width']
         se_input_width = interface.constants['se_data_width']
@@ -168,7 +168,7 @@ class TestXilinxFirCompiler(unittest.TestCase):
             input_data.append(input_d)
             
 
-        pyxfc = xilinx_fir_compiler.XilinxFirCompiler(
+        pyxfc = fir_compiler.FirCompiler(
             interface.builder.ip_params)
         pyoutput_data = []
         for wait_d in wait_data:
