@@ -21,7 +21,7 @@ class TestFirCompiler(unittest.TestCase):
         n_coefficients = 5
         params = {
             'module_name': 'simple_fir',
-            'n_coefficients': n_coefficients,
+            'n_taps': n_coefficients,
             'decimation_rate': 3,
         }
         self.helper(params)

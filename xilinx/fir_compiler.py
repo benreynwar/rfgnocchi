@@ -14,7 +14,7 @@ class FirCompilerBuilder(builder.Builder):
     def __init__(self, params):
         super().__init__(params)
         module_name = params['module_name']
-        n_coefficients = params['n_coefficients']
+        n_coefficients = params['n_taps']
         decimation_rate = params.get('decimation_rate', 1)
         if decimation_rate == 1:
             filter_type = 'Single_Rate'
