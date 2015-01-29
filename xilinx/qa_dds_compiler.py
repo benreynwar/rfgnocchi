@@ -58,14 +58,14 @@ class TestXilinxDDSCompiler(unittest.TestCase):
         # Make input and expected data
         input_data = []
         # Do nothing for 40 steps
-        for i in range(40):
-            input_d = {
-                'aresetn': 1,
-                's_axis_config_tvalid': 0,
-                's_axis_config_tdata': 0,
-                'm_axis_data_tready': 1,
-            }
-            input_data.append(input_d)
+        #for i in range(40):
+        #    input_d = {
+        #        'aresetn': 1,
+        #        's_axis_config_tvalid': 0,
+        #        's_axis_config_tdata': 0,
+        #        'm_axis_data_tready': 1,
+        #    }
+        #    input_data.append(input_d)
         # Set everything to 0
         offset = 0
         freq = 0
@@ -179,20 +179,20 @@ class TestXilinxDDSCompiler(unittest.TestCase):
         output_phase = [cmath.phase(complex(c, s))
                         for c, s in zip(output_c, output_s)]
         
-        # First 40 outputs are before anything is set
+   #     # First 40 outputs are before anything is set
         # Next 40 outputs are after we've set offset=0, freq=0
-        base_phase = output_phase[79]
+        base_phase = output_phase[39]
         # Next 40 outputs are after we've set offset=power(2,-4)*2*pi, freq=0
-        next_phase = output_phase[119]
+        next_phase = output_phase[79]
         phase_change = (next_phase - base_phase)
         if phase_change < 0:
             phase_change += math.pi * 2
         expected_phase_change = pow(2, -4)*2*math.pi
         # Then we go back to offset=0 for 40
-        phase_0again = output_phase[159]
+        phase_0again = output_phase[119]
         # And finally apply a freq of pow(2,-8)*2*pi
-        phase_with_freq_1 = output_phase[198]
-        phase_with_freq_2 = output_phase[199]
+        phase_with_freq_1 = output_phase[158]
+        phase_with_freq_2 = output_phase[159]
         phase_step = (phase_with_freq_2 - phase_with_freq_1)
         if phase_step < 0:
             phase_step += math.pi * 2
