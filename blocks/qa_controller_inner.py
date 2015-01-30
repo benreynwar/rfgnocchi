@@ -10,7 +10,7 @@ import testfixtures
 from pyvivado import project, signal
 from pyvivado import config as pyvivado_config
 
-from rfgnocchi.blocks import control_loop
+from rfgnocchi.blocks import controller_inner
 from rfgnocchi import config
 
 logger = logging.getLogger(__name__)
@@ -27,16 +27,16 @@ def make_blank_d():
     }
 
 
-class TestControlLoopCompiler(unittest.TestCase):
+class TestControllerInnerCompiler(unittest.TestCase):
 
     def test_one(self):
     
-        directory = os.path.abspath('proj_qa_testcontrolloop')
+        directory = os.path.abspath('proj_qa_testcontrollerinner')
         if os.path.exists(directory):
             shutil.rmtree(directory)
         os.mkdir(directory)
 
-        interface = control_loop.get_control_loop_interface({})
+        interface = controller_inner.get_controller_inner_interface({})
 
         # Make wait data.  Sent while initialising.
         n_wait_lines = 20

@@ -10,7 +10,7 @@ from rfgnocchi.ettus.rfnoc import mult
 
 logger = logging.getLogger(__name__)
 
-class ControlLoopBuilder(builder.Builder):
+class ControllerInnerBuilder(builder.Builder):
 
     def __init__(self, params={}):
         super().__init__(params)
@@ -18,12 +18,12 @@ class ControlLoopBuilder(builder.Builder):
             mult.MultBuilder({}),
         ]
         self.simple_filenames = [
-            os.path.join(config.basedir, 'blocks', 'control_loop.vhd'),
+            os.path.join(config.basedir, 'blocks', 'controller_inner.vhd'),
         ]
         
-def get_control_loop_interface(params):
-    module_name = 'control_loop'
-    builder = ControlLoopBuilder()
+def get_controller_inner_interface(params):
+    module_name = 'controller_inner'
+    builder = ControllerInnerBuilder()
     wires_in = (
         ('reset', signal.std_logic_type),
         ('clear', signal.std_logic_type),
@@ -45,5 +45,5 @@ def get_control_loop_interface(params):
     return iface
 
 
-assert('control_loop' not in interface.module_register)
-interface.module_register['control_loop'] = get_control_loop_interface
+assert('controller_inner' not in interface.module_register)
+interface.module_register['controller_inner'] = get_controller_inner_interface

@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity control_loop is
+entity controller_inner is
   port (
     clk: in std_logic;
     reset: in std_logic;
@@ -18,9 +18,9 @@ entity control_loop is
     o_phase_tvalid: out std_logic;
     o_phase_tready: in std_logic
     );
-end control_loop;
+end controller_inner;
 
-architecture arch of control_loop is
+architecture arch of controller_inner is
   constant PHASE_WIDTH: positive := 16;
   constant FREQUENCY_WIDTH: positive := 16;
   constant ERROR_WIDTH: positive := 16;
