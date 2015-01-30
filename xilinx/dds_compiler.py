@@ -10,21 +10,36 @@ from rfgnocchi import config
 logger = logging.getLogger(__name__)
 
 class DDSCompilerBuilder(builder.Builder):
+
+    partspresent_options = (
+        'sin_cos_lut_only',
+        'phase_generator_and_sin_cos_lut',
+    )
     
     def __init__(self, params):
         super().__init__(params)
         module_name = params['module_name']
         phase_width = params['phase_width']
         output_width = params['output_width']
+        partspresent = params.get(
+            'partspresent', 'phase_generator_and_sin_cos_lut')
+        has_aresetn = params.get('has_resetn', 'false')
+        assert(partspresent in self.partspresent_options)
         ip_params = [
-            ('parameter_entry', 'hardware_parameters'),
-            ('phase_increment', 'programmable'),
-            ('phase_offset', 'programmable'),
+            ('partspresent', partspresent),
+        ]
+        if partspresent == 'phase_generator_and_sin_cos_lut':
+            ip_params += [
+                ('parameter_entry', 'hardware_parameters'),
+                ('phase_increment', 'programmable'),
+                ('phase_offset', 'programmable'),
+                ('phase_width', phase_width),
+                ('has_phase_out', 'false'),
+            ]
+        ip_params += [
             ('has_tready', 'true'),
-            ('phase_width', phase_width),
             ('output_width', output_width),
-            ('has_phase_out', 'false'),
-            ('has_aresetn', 'true'),
+            ('has_aresetn', has_aresetn),
         ]
         self.ip_params = OrderedDict(ip_params)
         self.ips = [
