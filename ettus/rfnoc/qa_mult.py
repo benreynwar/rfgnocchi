@@ -27,14 +27,14 @@ class TestMult(unittest.TestCase):
         MAX_WIDTH_B = 18
         MAX_WIDTH_P = 48
 
-        width_A = 20
-        width_B = 13
-        drop_bottom_P = 10
+        width_A = 16
+        width_B = 16
+        drop_bottom_P = 15
         zeros_on_A = MAX_WIDTH_A - width_A
         zeros_on_B = MAX_WIDTH_B - width_B
         max_width_P = MAX_WIDTH_P - zeros_on_A - zeros_on_B
         drop_top_P = 6
-        width_P = max_width_P - drop_top_P
+        width_P = max_width_P - drop_top_P - drop_bottom_P
 
         params = {
             'width_A': width_A,
@@ -44,9 +44,11 @@ class TestMult(unittest.TestCase):
             'latency': 3,
             'cascade_out': 0,
         }
+        n_discard_bits = width_A + width_B - 1 - width_P
+        discard_f = pow(2, n_discard_bits)
 
         # Make wait data.  Sent while initialising.
-        n_data = 10
+        n_data = 100
         n_wait_lines = 20
         wait_data = []
         for wait_index in range(n_wait_lines):
@@ -72,7 +74,8 @@ class TestMult(unittest.TestCase):
             sa = signal.uint_to_sint(a, width_A)
             sb = signal.uint_to_sint(b, width_B)
             sp = sa * sb
-            p = signal.sint_to_uint(sp, width_P)
+            p = signal.sint_to_uint(sp, width_A+width_B-1)
+            p = p//discard_f
             input_d = {
                 'reset': 0,
                 'a_tdata': a,
