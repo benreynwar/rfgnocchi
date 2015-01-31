@@ -26,7 +26,12 @@ class TestCordicCompiler(unittest.TestCase):
             shutil.rmtree(directory)
         os.mkdir(directory)
 
-        params = {'module_name': 'square_root'}
+        input_width = 16
+        output_width = 16
+
+        params = {'module_name': 'square_root'
+                  'input_width': input_width,
+        }
         interface = cordic.get_cordic_interface(params)
 
         # Make wait data.  Sent while initialising.
@@ -46,7 +51,6 @@ class TestCordicCompiler(unittest.TestCase):
         # Make input and expected data
         input_data = []
         n_data = 100
-        input_width = 16
         max_input = pow(2, input_width)-1
         values = [random.randint(0, max_input)
                 for i in range(n_data)]

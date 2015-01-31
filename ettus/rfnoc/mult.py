@@ -20,6 +20,16 @@ class MultBuilder(builder.Builder):
             os.path.join(config.ettus_rfnocdir, 'axi_join.v'),
         ]
 
+class MultAddBuilder(builder.Builder):
+
+    def __init__(self, params={}):
+        super().__init__(params)
+        self.simple_filenames = [
+            os.path.join(config.ettus_rfnocdir, 'mult_add.v'),
+            os.path.join(config.ettus_rfnocdir, 'axi_pipe_mac.v'),
+            os.path.join(config.ettus_rfnocdir, 'axi_join.v'),
+            os.path.join(config.ettus_rfnocdir, 'axi_pipe.v'),
+        ]
 
 class MultRCBuilder(builder.Builder):
     
