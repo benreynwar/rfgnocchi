@@ -93,7 +93,7 @@ class TestFirCompiler(unittest.TestCase):
         min_coeff = -pow(2, coeff_width-1)
         #coefficients = [random.randint(min_coeff, max_coeff)
         #                for i in range(params['n_coefficients'])]
-        coefficients = [1] + [0]*params['n_coefficients']
+        coefficients = [1] + [0]*params['n_taps']
         for i, coeff in enumerate(coefficients):
             # We're assuming that s_axi_reload_tready is always active.
             if i == len(coefficients)-1:

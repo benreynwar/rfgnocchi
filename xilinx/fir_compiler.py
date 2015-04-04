@@ -20,27 +20,17 @@ class FirCompilerBuilder(builder.Builder):
             filter_type = 'Single_Rate'
         else:
             filter_type = 'Decimation'
-        xco_filename = os.path.join(config.ettus_coregendir, 'simple_fir.xco')
-        old_ip_params = builder.params_from_xco(xco_filename)
         ip_params = [
             ('filter_type', filter_type),
             ('decimation_rate', decimation_rate),
             ('coefficientsource', 'Vector'),
             ('coefficientvector', '1,0' + ',0'*(n_coefficients-2)),
             ('coefficient_file', 'no_coe_file_loaded'),
+            ('data_width', 16),
+            ('has_aresetn', 'true'),
+            ('number_paths', 2),
+            ('coefficient_width', 25),
         ]
-        new_keys = [p[0] for p in ip_params]
-        for old_param in old_ip_params.items():
-            if old_param[0] not in [
-                    'component_name', 'coefficient_file', 'reset_data_vector',
-                    'columnconfig', 's_config_sync_mode',
-                    # Not sure why I have to remove this but it seems to still
-                    # set coefficients to be signed.
-                    'coefficient_sign', 
-                    # Output width is disabled.
-                    'output_width',
-            ] + new_keys:
-                ip_params.append(old_param)
         self.ip_params = OrderedDict(ip_params)
         self.constants = {
             'output_width': (
