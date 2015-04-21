@@ -26,7 +26,7 @@ class TestXilinxDDSCompiler(unittest.TestCase):
         params = {
             'phase_width': phase_width,
             'output_width': output_width,
-            'module_name': 'nco'
+            'module_name': 'nco',
         }
     
         directory = os.path.abspath('proj_qa_testxilinxddscompiler')
@@ -159,7 +159,7 @@ class TestXilinxDDSCompiler(unittest.TestCase):
 
         # Run the simulation
         runtime = '{} ns'.format((len(input_data) + 20) * 10)
-        errors, output_data = p.run_hdl_simulation(
+        errors, output_data = p.run_simulation(
             input_data=wait_data+input_data, runtime=runtime)
 
         out_tdata = [d['m_axis_data_tdata'] for d in output_data if d['m_axis_data_tvalid']]
@@ -198,9 +198,6 @@ class TestXilinxDDSCompiler(unittest.TestCase):
             phase_step += math.pi * 2
         expected_phase_step = pow(2, -8)*2*math.pi
 
-        import pdb
-        pdb.set_trace()
-
         self.assertTrue(abs(phase_change-expected_phase_change) < 1e-4)
         self.assertTrue(abs(base_phase-phase_0again) < 1e-4)
         self.assertTrue(abs(phase_step-expected_phase_step) < 1e-4)
@@ -213,6 +210,5 @@ class TestXilinxDDSCompiler(unittest.TestCase):
         
         
 if __name__ == '__main__':
-    pyvivado_config.use_test_db()
     config.setup_logging(logging.DEBUG)
     unittest.main()

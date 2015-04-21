@@ -29,7 +29,7 @@ class TestCordicCompiler(unittest.TestCase):
         input_width = 16
         output_width = 16
 
-        params = {'module_name': 'square_root'
+        params = {'module_name': 'square_root',
                   'input_width': input_width,
         }
         interface = cordic.get_cordic_interface(params)
@@ -46,6 +46,8 @@ class TestCordicCompiler(unittest.TestCase):
                 'aresetn': aresetn,
                 's_axis_cartesian_tvalid': 0,
                 's_axis_cartesian_tdata': 0,
+                's_axis_cartesian_tlast': 0,
+                'm_axis_dout_tready': 1,
             }
             wait_data.append(input_d)
         # Make input and expected data
@@ -59,6 +61,8 @@ class TestCordicCompiler(unittest.TestCase):
                 'aresetn': 1,
                 's_axis_cartesian_tvalid': 1,
                 's_axis_cartesian_tdata': v,
+                's_axis_cartesian_tlast': 0,
+                'm_axis_dout_tready': 1,
             }
             input_data.append(input_d)
         # And gather data for a bit.
@@ -66,8 +70,10 @@ class TestCordicCompiler(unittest.TestCase):
         for index1 in range(n_gather):
             input_d = {
                 'aresetn': 1,
-                's_axis_config_tvalid': 0,
-                's_axis_config_tdata': 0,
+                's_axis_cartesian_tvalid': 0,
+                's_axis_cartesian_tdata': 0,
+                's_axis_cartesian_tlast': 0,
+                'm_axis_dout_tready': 1,
             }
             input_data.append(input_d)
 
@@ -82,7 +88,7 @@ class TestCordicCompiler(unittest.TestCase):
 
         # Run the simulation
         runtime = '{} ns'.format((len(input_data) + 20) * 10)
-        errors, output_data = p.run_hdl_simulation(
+        errors, output_data = p.run_simulation(
             input_data=wait_data+input_data, runtime=runtime)
 
         out_tdata = [d['m_axis_dout_tdata']
@@ -94,6 +100,5 @@ class TestCordicCompiler(unittest.TestCase):
         testfixtures.compare(out_tdata, expected_data)
 
 if __name__ == '__main__':
-    pyvivado_config.use_test_db()
     config.setup_logging(logging.DEBUG)
     unittest.main()

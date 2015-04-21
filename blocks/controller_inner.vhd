@@ -2,6 +2,14 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+-- controller_inner takes an input 'i_error' signal and outputs an
+-- output 'o_phase' signal.
+--
+-- new_freq = freq + beta * error
+-- new_phase = phase + freq * alpha * error
+--
+-- The value for alpha and beta are set using the i_config channel.
+
 entity controller_inner is
   port (
     clk: in std_logic;

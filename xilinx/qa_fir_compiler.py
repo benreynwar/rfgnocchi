@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class TestFirCompiler(unittest.TestCase):
 
     def test_one(self):
-        n_coefficients = 5
+        n_coefficients = 6
         params = {
             'module_name': 'simple_fir',
             'n_taps': n_coefficients,
@@ -37,6 +37,7 @@ class TestFirCompiler(unittest.TestCase):
         coeff_width = interface.constants['coefficient_width']
         input_width = interface.constants['data_width']
         se_input_width = interface.constants['se_data_width']
+        se_output_width = interface.constants['se_output_width']
         decimation_rate = interface.constants['decimation_rate']
 
         # Make wait data.  Sent while initialising.
@@ -62,7 +63,7 @@ class TestFirCompiler(unittest.TestCase):
             wait_data.append(input_d)
         # Make input and expected data
         input_data = []
-        # Confirm that initially the taps have all '1's entry.
+        # Confirm that initially the taps have a single 1 entry.
         n_data0 = (20//decimation_rate) * decimation_rate
         max_input = pow(2, input_width-1)-1
         min_input = -pow(2, input_width-1)
@@ -88,12 +89,30 @@ class TestFirCompiler(unittest.TestCase):
                 'm_axis_data_tready': 1,
             }
             input_data.append(input_d)
+        for i in range(25):
+            input_d = {
+                'aresetn': 1,
+                's_axis_data_tvalid': 0, 
+                's_axis_data_tlast': 0,
+                's_axis_data_tdata': 0,
+                's_axis_config_tvalid': 0,
+                's_axis_config_tdata': 0,
+                's_axis_reload_tvalid': 0, 
+                's_axis_reload_tlast': 0,
+                's_axis_reload_tdata': 0,
+                'm_axis_data_tready': 1,
+            }
+            input_data.append(input_d)
         
         max_coeff = pow(2, coeff_width-1)-1
         min_coeff = -pow(2, coeff_width-1)
-        #coefficients = [random.randint(min_coeff, max_coeff)
-        #                for i in range(params['n_coefficients'])]
-        coefficients = [1] + [0]*params['n_coefficients']
+        filter1 = [random.randint(min_coeff, max_coeff)
+                   for i in range(params['n_taps'])]
+        filter1 = (1, 1, 1, 1, 1, 0)
+        assert(len(filter1) % decimation_rate == 0)
+        coefficients = []
+        for i in range(len(filter1)//decimation_rate, 0, -1):
+            coefficients += filter1[(i-1)*decimation_rate:i*decimation_rate]
         for i, coeff in enumerate(coefficients):
             # We're assuming that s_axi_reload_tready is always active.
             if i == len(coefficients)-1:
@@ -115,7 +134,9 @@ class TestFirCompiler(unittest.TestCase):
             }
             input_data.append(input_d)
         # Do nothing for a couple clock cycles
-        for i in range(2):
+        long_enough_wait_A = 10
+        long_enough_wait_B = 20
+        for i in range(long_enough_wait_A):
             input_data.append({
                 'aresetn': 1,
                 's_axis_data_tvalid': 0, 
@@ -141,23 +162,34 @@ class TestFirCompiler(unittest.TestCase):
             's_axis_reload_tdata': 0,
             'm_axis_data_tready': 1,
         })
+        for i in range(long_enough_wait_B):
+            input_data.append({
+                'aresetn': 1,
+                's_axis_data_tvalid': 0, 
+                's_axis_data_tlast': 0,
+                's_axis_data_tdata': 0,
+                's_axis_config_tvalid': 0,
+                's_axis_config_tdata': 0,
+                's_axis_reload_tvalid': 0, 
+                's_axis_reload_tlast': 0,
+                's_axis_reload_tdata': 0,
+                'm_axis_data_tready': 1,
+            })
         # Test new coefficients
         n_data1 = (30//decimation_rate) * decimation_rate
         max_input = pow(2, input_width-1)-1
         min_input = -pow(2, input_width-1)
-        #data1 = [
-        #    signal.sint_to_uint(
-        #        random.randint(min_input, max_input), width=se_input_width) +
-        #    signal.sint_to_uint(
-        #        random.randint(min_input, max_input), width=se_input_width)*f*0                
-        #    for i in range(n_data1)]
+        #data1 = [random.randint(min_input, max_input) 
+        #         + 1j*random.randint(min_input, max_input)
+        #         for i in range(n_data1)]
         data1 = range(n_data1)
         for d1 in data1:
             input_d = {
                 'aresetn': 1,
                 's_axis_data_tvalid': 1, 
                 's_axis_data_tlast': 0,
-                's_axis_data_tdata': d1,
+                's_axis_data_tdata': signal.complex_to_uint(
+                    d1, width=se_output_width),
                 's_axis_config_tvalid': 0,
                 's_axis_config_tdata': 0,
                 's_axis_reload_tvalid': 0, 
@@ -166,18 +198,39 @@ class TestFirCompiler(unittest.TestCase):
                 'm_axis_data_tready': 1,
             }
             input_data.append(input_d)
+        for i in range(20):
+            input_data.append({
+                'aresetn': 1,
+                's_axis_data_tvalid': 0, 
+                's_axis_data_tlast': 0,
+                's_axis_data_tdata': 0,
+                's_axis_config_tvalid': 0,
+                's_axis_config_tdata': 0,
+                's_axis_reload_tvalid': 0, 
+                's_axis_reload_tlast': 0,
+                's_axis_reload_tdata': 0,
+                'm_axis_data_tready': 1,
+            })
             
-
-        pyxfc = fir_compiler.FirCompiler(
-            interface.builder.ip_params)
-        pyoutput_data = []
-        for wait_d in wait_data:
-            pyxfc.process(wait_d)
-        for input_d in input_data:
-            pyoutput_data.append(pyxfc.process(input_d))
-
-        import pdb
-        pdb.set_trace()
+        # We are running data0 through filter 1, 0, 0....
+        filter0 = [1] + [0] * (params['n_taps']-1)
+        data0 = [0]*(params['n_taps']-1) + list(data0)
+        filtered0 = []
+        for i in range(params['n_taps']-1, len(data0)):
+            f = 0
+            for j, tap in enumerate(filter0):
+                f += data0[i-j]*tap
+            filtered0.append(f)
+        decimated0 = filtered0[2::3]
+        # Then data1 through filter coefficients
+        data1 = data0[-(params['n_taps']-1):] + list(data1)
+        filtered1 = []
+        for i in range(params['n_taps']-1, len(data1)):
+            f = 0
+            for j, tap in enumerate(filter1):
+                f += data1[i-j]*tap
+            filtered1.append(f)
+        decimated1 = filtered1[2::3]
 
         p = project.FileTestBenchProject.create(
             interface=interface, directory=directory,
@@ -190,28 +243,18 @@ class TestFirCompiler(unittest.TestCase):
 
         # Run the simulation
         runtime = '{} ns'.format((len(input_data) + 20) * 10)
-        errors, output_data = p.run_hdl_simulation(
+        errors, output_data = p.run_simulation(
             input_data=wait_data+input_data, runtime=runtime)
-
-        for data in (output_data, pyoutput_data):
-            for d in data:
-                if not d['m_axis_data_tvalid']:
-                    d['m_axis_data_tdata'] = None
-
-        latency = 0
-        delay = 1 + n_wait_lines + latency
-        import pdb
-        pdb.set_trace()
-        self.check_output(output_data[delay:], pyoutput_data)
         self.assertEqual(len(errors), 0)
 
-    def check_output(self, output_data, expected_data):
-        self.assertTrue(len(output_data) >= len(expected_data))
-        output_data = output_data[:len(expected_data)]
-        testfixtures.compare(output_data, expected_data)
-        
+        out_decimated = [
+            signal.uint_to_complex(d['m_axis_data_tdata'], width=se_output_width)
+            for d in output_data if d['m_axis_data_tvalid']]
+        import pdb
+        pdb.set_trace()
+        self.assertEqual((decimated0 + decimated1), out_decimated)
+
         
 if __name__ == '__main__':
-    pyvivado_config.use_test_db()
     config.setup_logging(logging.DEBUG)
     unittest.main()

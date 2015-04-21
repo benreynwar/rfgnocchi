@@ -2,6 +2,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+-- controller takes an error signal and uses that to modify an input
+-- complex stream to produce an output complex stream.
+
 entity controller is
   port (
     clk: in std_logic;
@@ -27,14 +30,16 @@ architecture arch of controller is
   signal phase_tdata: std_logic_vector(15 downto 0);
   signal phase_tvalid: std_logic;
   signal phase_tready: std_logic;
-  signal corrector_tdata: std_logic_vector(15 downto 0);
+  signal corrector_tdata: std_logic_vector(31 downto 0);
   signal corrector_tvalid: std_logic;
   signal corrector_tready: std_logic;
+  signal o_data_twidedata: std_logic_vector(79 downto 0);
   signal resetn: std_logic;
 begin
 
   resetn <= not reset;
-  
+
+  -- Convert the error signal into a rotation correction signal.
   cl: entity work.controller_inner
     port map (
       clk => clk,
@@ -50,9 +55,11 @@ begin
       o_phase_tready => phase_tready
       );
 
+  -- Convert that phase into a complex signal.
   noc: entity work.sincoslut
     port map (
       aclk => clk,
+      aresetn => resetn,
       s_axis_phase_tdata => phase_tdata,
       s_axis_phase_tvalid => phase_tvalid,
       s_axis_phase_tready => phase_tready,
@@ -61,6 +68,7 @@ begin
       m_axis_data_tready => corrector_tready
       );
 
+  -- Multiply the input by the complex correction.
   the_mult: entity work.complex_multiply
     port map (
       aclk => clk,
@@ -71,10 +79,12 @@ begin
       s_axis_b_tdata => corrector_tdata,
       s_axis_b_tvalid => corrector_tvalid,
       s_axis_b_tready => corrector_tready,
-      m_axis_dout_tdata => o_data_tdata,
+      m_axis_dout_tdata => o_data_twidedata,
       m_axis_dout_tvalid => o_data_tvalid,
       m_axis_dout_tready => o_data_tready,
       m_axis_dout_tlast => o_data_tlast
       );
-      
+  o_data_tdata(31 downto 16) <= o_data_twidedata(79 downto 64);
+  o_data_tdata(15 downto 0) <= o_data_twidedata(39 downto 24);
+
 end arch;

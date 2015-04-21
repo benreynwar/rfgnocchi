@@ -40,11 +40,15 @@ def get_cordic_interface(params):
         ('aresetn', signal.std_logic_type),
         ('s_axis_cartesian_tdata', signal.StdLogicVector(width=input_width)),
         ('s_axis_cartesian_tvalid', signal.std_logic_type),
+        ('s_axis_cartesian_tlast', signal.std_logic_type),
+        ('m_axis_dout_tready', signal.std_logic_type),
     )
     wires_out = (
         ('m_axis_dout_tvalid', signal.std_logic_type),
+        ('m_axis_dout_tlast', signal.std_logic_type), 
         # Only 9 of those bits are relevant but sign-extended up to 16.
         ('m_axis_dout_tdata', signal.StdLogicVector(width=output_width)),
+        ('s_axis_cartesian_tready', signal.std_logic_type),
     )
     constants = {
         'output_width': output_width,

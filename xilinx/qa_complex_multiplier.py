@@ -1,15 +1,10 @@
 import os
 import unittest
 import shutil
-import random
 import logging
-import math
-import cmath
-
-import testfixtures
+import random
 
 from pyvivado import project, signal
-from pyvivado import config as pyvivado_config
 
 from rfgnocchi.xilinx import complex_multiplier
 from rfgnocchi import config
@@ -53,8 +48,9 @@ class TestComplexMultiplier(unittest.TestCase):
         input_data = []
         # Try to multiply real numbers first
         n_data = 100
-        inputs_A = [pow(2, input_width-1)]*100
-        inputs_B = range(n_data)
+        max_mag = pow(2, input_width)-1
+        inputs_A = [random.randint(0, max_mag) for i in range(n_data)]
+        inputs_B = [random.randint(0, max_mag) for i in range(n_data)]
         for a, b in zip(inputs_A, inputs_B):
             input_d = {
                 's_axis_a_tvalid': 1,
@@ -62,6 +58,17 @@ class TestComplexMultiplier(unittest.TestCase):
                 's_axis_a_tdata': a,
                 's_axis_b_tvalid': 1,
                 's_axis_b_tdata': b,
+                'm_axis_dout_tready': 1,
+            }
+            input_data.append(input_d)
+        # And send some blanks in to flush.
+        for i in range(20):
+            input_d = {
+                's_axis_a_tvalid': 0,
+                's_axis_a_tlast': 0,
+                's_axis_a_tdata': 0,
+                's_axis_b_tvalid': 0,
+                's_axis_b_tdata': 0,
                 'm_axis_dout_tready': 1,
             }
             input_data.append(input_d)
@@ -77,27 +84,23 @@ class TestComplexMultiplier(unittest.TestCase):
 
         # Run the simulation
         runtime = '{} ns'.format((len(input_data) + 20) * 10)
-        errors, output_data = p.run_hdl_simulation(
+        errors, output_data = p.run_simulation(
             input_data=wait_data+input_data, runtime=runtime)
 
         out_tdata = [d['m_axis_dout_tdata']
                      for d in output_data if d['m_axis_dout_tvalid']]
 
-        out_cs = [signal.uint_to_complex(d, width=se_output_width)
+        out_cs= [signal.uint_to_complex(d, width=se_output_width)
                   for d in out_tdata]
-
-        import pdb
-        pdb.set_trace()
-
+        in_as = [signal.uint_to_complex(d, width=se_input_width)
+                 for d in inputs_A]
+        in_bs = [signal.uint_to_complex(d, width=se_input_width)
+                 for d in inputs_B]
+        expected_cs = [a*b for a, b in zip(in_as, in_bs)]
         self.assertEqual(len(errors), 0)
+        self.assertEqual(out_cs, expected_cs)
 
-    def check_output(self, output_data, expected_data):
-        self.assertTrue(len(output_data) >= len(expected_data))
-        output_data = output_data[:len(expected_data)]
-        testfixtures.compare(output_data, expected_data)
-        
         
 if __name__ == '__main__':
-    pyvivado_config.use_test_db()
     config.setup_logging(logging.DEBUG)
     unittest.main()

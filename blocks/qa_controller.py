@@ -65,16 +65,12 @@ class TestControllerCompiler(unittest.TestCase):
 
         # Run the simulation
         runtime = '{} ns'.format((len(input_data) + 20) * 10)
-        errors, output_data = p.run_hdl_simulation(
+        errors, output_data = p.run_simulation(
             input_data=wait_data+input_data, runtime=runtime)
         
-        import pdb
-        pdb.set_trace()
-
         self.assertEqual(len(errors), 0)
 
         
 if __name__ == '__main__':
-    pyvivado_config.use_test_db()
     config.setup_logging(logging.DEBUG)
     unittest.main()

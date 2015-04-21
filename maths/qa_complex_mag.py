@@ -93,7 +93,7 @@ class TestComplexMag(unittest.TestCase):
 
         # Run the simulation
         runtime = '{} ns'.format((len(wait_data+input_data) + 20) * 10)
-        errors, output_data = p.run_hdl_simulation(
+        errors, output_data = p.run_simulation(
             input_data=wait_data+input_data, runtime=runtime)
 
         output_mags = [d['o_tdata'] for d in output_data if d['o_tvalid']]
@@ -101,6 +101,5 @@ class TestComplexMag(unittest.TestCase):
         testfixtures.compare(output_mags, expected_mags)
         
 if __name__ == '__main__':
-    pyvivado_config.use_test_db()
     config.setup_logging(logging.DEBUG)
     unittest.main()

@@ -10,6 +10,10 @@ from rfgnocchi import config
 logger = logging.getLogger(__name__)
 
 class FirCompilerBuilder(builder.Builder):
+    '''
+    When using this in decimation mode the filter taps must be sent in a
+    weird order.  See qa_fir_compiler for an example.
+    '''
     
     def __init__(self, params):
         super().__init__(params)
@@ -20,27 +24,38 @@ class FirCompilerBuilder(builder.Builder):
             filter_type = 'Single_Rate'
         else:
             filter_type = 'Decimation'
-        xco_filename = os.path.join(config.ettus_coregendir, 'simple_fir.xco')
-        old_ip_params = builder.params_from_xco(xco_filename)
+            if n_coefficients % decimation_rate != 0:
+                raise ValueError('Number of coefficients must be a multiple of decimation.')
+        #xco_filename = os.path.join(config.ettus_coregendir, 'simple_fir.xco')
+        #old_ip_params = builder.params_from_xco(xco_filename)
         ip_params = [
             ('filter_type', filter_type),
             ('decimation_rate', decimation_rate),
             ('coefficientsource', 'Vector'),
             ('coefficientvector', '1,0' + ',0'*(n_coefficients-2)),
             ('coefficient_file', 'no_coe_file_loaded'),
+            ('coefficient_width', 25),
+            ('data_width', 16),
+            ('has_aresetn', 'true'),
+            ('data_has_tlast', 'Packet_Framing'),
+            ('coefficient_reload', 'true'),
+            ('m_data_has_tready', 'true'),
+            ('number_paths', 2),
+            ('sample_frequency', '200'),
+
         ]
-        new_keys = [p[0] for p in ip_params]
-        for old_param in old_ip_params.items():
-            if old_param[0] not in [
-                    'component_name', 'coefficient_file', 'reset_data_vector',
-                    'columnconfig', 's_config_sync_mode',
-                    # Not sure why I have to remove this but it seems to still
-                    # set coefficients to be signed.
-                    'coefficient_sign', 
-                    # Output width is disabled.
-                    'output_width',
-            ] + new_keys:
-                ip_params.append(old_param)
+        # new_keys = [p[0] for p in ip_params]
+        # for old_param in old_ip_params.items():
+        #     if old_param[0] not in [
+        #             'component_name', 'coefficient_file', 'reset_data_vector',
+        #             'columnconfig', 's_config_sync_mode',
+        #             # Not sure why I have to remove this but it seems to still
+        #             # set coefficients to be signed.
+        #             'coefficient_sign', 
+        #             # Output width is disabled.
+        #             'output_width',
+        #     ] + new_keys:
+        #         ip_params.append(old_param)
         self.ip_params = OrderedDict(ip_params)
         self.constants = {
             'output_width': (

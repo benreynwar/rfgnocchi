@@ -37,7 +37,7 @@ def get_controller_interface(params):
     wires_in = (
         ('reset', signal.std_logic_type),
         ('clear', signal.std_logic_type),
-        ('i_error_tdata', signal.StdLogicVector(width=32)),
+        ('i_error_tdata', signal.StdLogicVector(width=16)),
         ('i_error_tvalid', signal.std_logic_type),
         ('i_data_tdata', signal.StdLogicVector(width=32)),
         ('i_data_tvalid', signal.std_logic_type),

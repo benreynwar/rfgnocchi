@@ -23,7 +23,7 @@ class DDSCompilerBuilder(builder.Builder):
         output_width = params['output_width']
         partspresent = params.get(
             'partspresent', 'phase_generator_and_sin_cos_lut')
-        has_aresetn = params.get('has_resetn', 'false')
+        has_aresetn = params.get('has_resetn', 'true')
         assert(partspresent in self.partspresent_options)
         ip_params = [
             ('partspresent', partspresent),

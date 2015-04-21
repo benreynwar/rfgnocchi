@@ -100,7 +100,7 @@ class TestRotatorCCCompiler(unittest.TestCase):
 
         # Run the simulation
         runtime = '{} ns'.format((len(input_data) + 20) * 10)
-        errors, output_data = p.run_hdl_simulation(
+        errors, output_data = p.run_simulation(
             input_data=wait_data+input_data, runtime=runtime)
 
         complex_width = 32
@@ -124,9 +124,6 @@ class TestRotatorCCCompiler(unittest.TestCase):
                               for i in range(len(c_data))]
         expected_cs = [c*r for c, r in zip(c_data, expected_rotations)]
 
-        import pdb
-        pdb.set_trace()
-
         self.assertTrue(len(output_cs) >= len(expected_cs))
         for o, e in zip(output_cs[20:], expected_cs[20:]):
             distance = abs(o-e)
@@ -134,6 +131,5 @@ class TestRotatorCCCompiler(unittest.TestCase):
 
         
 if __name__ == '__main__':
-    pyvivado_config.use_test_db()
     config.setup_logging(logging.DEBUG)
     unittest.main()

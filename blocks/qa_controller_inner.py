@@ -136,12 +136,10 @@ class TestControllerInnerCompiler(unittest.TestCase):
 
         # Run the simulation
         runtime = '{} ns'.format((len(input_data) + 20) * 10)
-        errors, output_data = p.run_hdl_simulation(
+        errors, output_data = p.run_simulation(
             input_data=wait_data+input_data, runtime=runtime)
 
         phases = [d['o_phase_tdata'] for d in output_data if d['o_phase_tvalid']]
-        import pdb
-        pdb.set_trace()
         # After 50 inputs we should have 0 phase
         self.assertEqual(phases[49], 0)
         # After 80 inputs the phase should be half the sum of errors
@@ -154,6 +152,5 @@ class TestControllerInnerCompiler(unittest.TestCase):
 
         
 if __name__ == '__main__':
-    pyvivado_config.use_test_db()
     config.setup_logging(logging.DEBUG)
     unittest.main()
