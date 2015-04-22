@@ -4,8 +4,8 @@ import math
 
 from pyvivado import builder, interface, signal
 
-from rfgnocchi.filters.xilinx_fir_compiler import XilinxFirCompilerBuilder
-from rfgnocchi.fifo.fifo_generator import FifoGeneratorBuilder
+from rfgnocchi.xilinx.fir_compiler import FirCompilerBuilder
+from rfgnocchi.xilinx.fifo_generator import FifoGeneratorBuilder
 from rfgnocchi import config
 
 logger = logging.getLogger(__name__)
@@ -16,9 +16,9 @@ class NocBlockFirFilterBuilder(builder.Builder):
         super().__init__(params)
         module_name = 'noc_block_fir_filter'
         n_coefficients = 21
-        simple_fir_builder = XilinxFirCompilerBuilder({
+        simple_fir_builder = FirCompilerBuilder({
             'module_name': 'simple_fir',
-            'n_coefficients': n_coefficients,
+            'n_taps': n_coefficients,
         })
         fifo_short_2clk_builder = FifoGeneratorBuilder({
             'implementation_type': 'independent_clocks_distributed_ram',
@@ -39,7 +39,7 @@ class NocBlockFirFilterBuilder(builder.Builder):
             'data_width': int(
                 simple_fir_builder.ip_params['data_width']),
             'output_width': int(
-                simple_fir_builder.ip_params['output_width']),
+                simple_fir_builder.constants['output_width']),
         }        
         self.builders = [
             simple_fir_builder,

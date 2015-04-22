@@ -1,6 +1,5 @@
 import os
 import unittest
-import shutil
 import random
 import logging
 
@@ -9,7 +8,7 @@ import testfixtures
 from pyvivado import project, signal
 from pyvivado import config as pyvivado_config
 
-from rfgnocchi.filters import noc_block_fir_filter
+from rfgnocchi.ettus.rfnoc import noc_block_fir_filter
 from rfgnocchi import config, chdr
 
 logger = logging.getLogger(__name__)
@@ -19,10 +18,6 @@ class TestNocBlockFirFilter(unittest.TestCase):
     def test_one(self):
 
         directory = os.path.abspath('proj_qa_testnocblockfirfilter')
-        if os.path.exists(directory):
-            shutil.rmtree(directory)
-        os.mkdir(directory)
-
         interface = noc_block_fir_filter.get_noc_block_fir_filter_interface(params={})
         coeff_width = interface.constants['coefficient_width']
         input_width = interface.constants['data_width']
@@ -61,7 +56,7 @@ class TestNocBlockFirFilter(unittest.TestCase):
 
         input_data = chdr.packets_to_noc_inputs((settings_packet, data_packet))
 
-        p = project.FileTestBenchProject.create(
+        p = project.FileTestBenchProject.create_or_update(
             interface=interface, directory=directory,
             board=config.default_board,
             part=config.default_part,
@@ -71,15 +66,11 @@ class TestNocBlockFirFilter(unittest.TestCase):
         self.assertEqual(len(errors), 0)
 
         runtime = '{} ns'.format((len(input_data) + 20) * 10)
-        errors, output_data = p.run_hdl_simulation(
+        errors, output_data = p.run_simulation(
             input_data=[], runtime=runtime)
         self.assertEqual(len(errors), 0)
-        import pdb
-        pdb.set_trace()
-        
 
         
 if __name__ == '__main__':
-    pyvivado_config.use_test_db()
     config.setup_logging(logging.DEBUG)
     unittest.main()

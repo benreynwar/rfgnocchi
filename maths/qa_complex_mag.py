@@ -1,6 +1,5 @@
 import os
 import unittest
-import shutil
 import random
 import logging
 
@@ -19,12 +18,7 @@ class TestComplexMag(unittest.TestCase):
     def test_one(self):
 
         directory = os.path.abspath('proj_qa_testcomplexmag')
-        if os.path.exists(directory):
-            shutil.rmtree(directory)
-        os.mkdir(directory)
-
         width = 16
-
         params = {
             'width': width,
         }
@@ -82,7 +76,7 @@ class TestComplexMag(unittest.TestCase):
             
 
         interface = complex_mag.get_complex_mag_interface(params)
-        p = project.FileTestBenchProject.create(
+        p = project.FileTestBenchProject.create_or_update(
             interface=interface, directory=directory,
             board=config.default_board,
             part=config.default_part,

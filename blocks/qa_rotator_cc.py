@@ -1,6 +1,5 @@
 import os
 import unittest
-import shutil
 import random
 import logging
 import cmath
@@ -22,10 +21,6 @@ class TestRotatorCCCompiler(unittest.TestCase):
     def test_one(self):
     
         directory = os.path.abspath('proj_qa_testrotatorcc')
-        if os.path.exists(directory):
-            shutil.rmtree(directory)
-        os.mkdir(directory)
-
         interface = rotator_cc.get_rotator_cc_interface({})
 
         # Make wait data.  Sent while initialising.
@@ -89,7 +84,7 @@ class TestRotatorCCCompiler(unittest.TestCase):
             }
             input_data.append(input_d)
 
-        p = project.FileTestBenchProject.create(
+        p = project.FileTestBenchProject.create_or_update(
             interface=interface, directory=directory,
             board=config.default_board,
             part=config.default_part,

@@ -1,6 +1,5 @@
 import os
 import unittest
-import shutil
 import logging
 import cmath
 import math
@@ -32,10 +31,6 @@ class TestControllerInnerCompiler(unittest.TestCase):
     def test_one(self):
     
         directory = os.path.abspath('proj_qa_testcontrollerinner')
-        if os.path.exists(directory):
-            shutil.rmtree(directory)
-        os.mkdir(directory)
-
         interface = controller_inner.get_controller_inner_interface({})
 
         # Make wait data.  Sent while initialising.
@@ -124,7 +119,7 @@ class TestControllerInnerCompiler(unittest.TestCase):
             input_d['o_phase_tready'] = 1
             input_data.append(input_d)
         
-        p = project.FileTestBenchProject.create(
+        p = project.FileTestBenchProject.create_or_update(
             interface=interface, directory=directory,
             board=config.default_board,
             part=config.default_part,

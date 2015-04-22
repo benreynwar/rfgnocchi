@@ -1,6 +1,5 @@
 import os
 import unittest
-import shutil
 import random
 import logging
 
@@ -29,10 +28,6 @@ class TestFirCompiler(unittest.TestCase):
     def helper(self, params):
     
         directory = os.path.abspath('proj_qa_testfircompiler')
-        if os.path.exists(directory):
-            shutil.rmtree(directory)
-        os.mkdir(directory)
-
         interface = fir_compiler.get_fir_compiler_interface(params)
         coeff_width = interface.constants['coefficient_width']
         input_width = interface.constants['data_width']
@@ -228,7 +223,7 @@ class TestFirCompiler(unittest.TestCase):
             filtered1.append(f)
         decimated1 = filtered1[2::3]
 
-        p = project.FileTestBenchProject.create(
+        p = project.FileTestBenchProject.create_or_update(
             interface=interface, directory=directory,
             board=config.default_board,
             part=config.default_part,

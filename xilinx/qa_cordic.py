@@ -1,6 +1,5 @@
 import os
 import unittest
-import shutil
 import random
 import logging
 import math
@@ -22,10 +21,6 @@ class TestCordicCompiler(unittest.TestCase):
     def test_one(self):
 
         directory = os.path.abspath('proj_qa_coric')
-        if os.path.exists(directory):
-            shutil.rmtree(directory)
-        os.mkdir(directory)
-
         input_width = 16
         output_width = 16
 
@@ -77,7 +72,7 @@ class TestCordicCompiler(unittest.TestCase):
             }
             input_data.append(input_d)
 
-        p = project.FileTestBenchProject.create(
+        p = project.FileTestBenchProject.create_or_update(
             interface=interface, directory=directory,
             board=config.default_board,
             part=config.default_part,

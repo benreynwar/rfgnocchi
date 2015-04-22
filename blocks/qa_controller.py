@@ -1,6 +1,5 @@
 import os
 import unittest
-import shutil
 import logging
 import cmath
 import math
@@ -35,10 +34,6 @@ class TestControllerCompiler(unittest.TestCase):
     def test_one(self):
     
         directory = os.path.abspath('proj_qa_testcontroller')
-        if os.path.exists(directory):
-            shutil.rmtree(directory)
-        os.mkdir(directory)
-
         interface = controller.get_controller_interface({})
 
         n_wait_lines = 20
@@ -53,7 +48,7 @@ class TestControllerCompiler(unittest.TestCase):
             wait_data.append(input_d)
         input_data = []
         
-        p = project.FileTestBenchProject.create(
+        p = project.FileTestBenchProject.create_or_update(
             interface=interface, directory=directory,
             board=config.default_board,
             part=config.default_part,

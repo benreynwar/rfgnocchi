@@ -1,6 +1,5 @@
 import os
 import unittest
-import shutil
 import random
 import logging
 
@@ -19,10 +18,6 @@ class TestMult(unittest.TestCase):
     def test_one(self):
 
         directory = os.path.abspath('proj_qa_testmult')
-        if os.path.exists(directory):
-            shutil.rmtree(directory)
-        os.mkdir(directory)
-
         MAX_WIDTH_A = 25
         MAX_WIDTH_B = 18
         MAX_WIDTH_P = 48
@@ -97,7 +92,7 @@ class TestMult(unittest.TestCase):
             expected_data.append(expected_d)
 
         interface = mult.get_mult_interface(params)
-        p = project.FileTestBenchProject.create(
+        p = project.FileTestBenchProject.create_or_update(
             interface=interface, directory=directory,
             board=config.default_board,
             part=config.default_part,
@@ -108,12 +103,10 @@ class TestMult(unittest.TestCase):
 
         # Run the simulation
         runtime = '{} ns'.format((len(wait_data+input_data) + 20) * 10)
-        errors, output_data = p.run_hdl_simulation(
+        errors, output_data = p.run_simulation(
             input_data=wait_data+input_data, runtime=runtime)
         latency = 3
         delay = 1 + n_wait_lines + latency
-        import pdb
-        pdb.set_trace()
         self.check_output(output_data[delay:], expected_data)
         self.assertEqual(len(errors), 0)
 
@@ -124,6 +117,5 @@ class TestMult(unittest.TestCase):
         
         
 if __name__ == '__main__':
-    pyvivado_config.use_test_db()
     config.setup_logging(logging.DEBUG)
     unittest.main()

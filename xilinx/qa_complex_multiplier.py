@@ -1,6 +1,5 @@
 import os
 import unittest
-import shutil
 import logging
 import random
 
@@ -21,10 +20,6 @@ class TestComplexMultiplier(unittest.TestCase):
         }
     
         directory = os.path.abspath('proj_qa_testcomplexmultplier')
-        if os.path.exists(directory):
-            shutil.rmtree(directory)
-        os.mkdir(directory)
-
         interface = complex_multiplier.get_complex_multiplier_interface(params)
         input_width = interface.constants['input_width']
         output_width = interface.constants['output_width']
@@ -73,7 +68,7 @@ class TestComplexMultiplier(unittest.TestCase):
             }
             input_data.append(input_d)
 
-        p = project.FileTestBenchProject.create(
+        p = project.FileTestBenchProject.create_or_update(
             interface=interface, directory=directory,
             board=config.default_board,
             part=config.default_part,

@@ -1,6 +1,5 @@
 import os
 import unittest
-import shutil
 import random
 import logging
 import math
@@ -30,10 +29,6 @@ class TestXilinxDDSCompiler(unittest.TestCase):
         }
     
         directory = os.path.abspath('proj_qa_testxilinxddscompiler')
-        if os.path.exists(directory):
-            shutil.rmtree(directory)
-        os.mkdir(directory)
-
         interface = dds_compiler.get_dds_compiler_interface(params)
         se_phase_width = interface.constants['se_phase_width']
         se_output_width = interface.constants['se_output_width']
@@ -148,7 +143,7 @@ class TestXilinxDDSCompiler(unittest.TestCase):
             input_data.append(input_d)
         
 
-        p = project.FileTestBenchProject.create(
+        p = project.FileTestBenchProject.create_or_update(
             interface=interface, directory=directory,
             board=config.default_board,
             part=config.default_part,
