@@ -68,19 +68,17 @@ class TestFirCompiler(unittest.TestCase):
         max_input = pow(2, input_width-1)-1
         min_input = -pow(2, input_width-1)
         f = pow(2, input_width)
-        #data0 = [
-        #    signal.sint_to_uint(
-        #        random.randint(min_input, max_input), width=se_input_width) +
-        #    signal.sint_to_uint(
-        #        random.randint(min_input, max_input), width=se_input_width)*f*0                
-        #    for i in range(n_data0)]
+        data0 = [random.randint(min_input, max_input) 
+                 + 1j*random.randint(min_input, max_input)
+                 for i in range(n_data0)]
         data0 = range(n_data0)
         for d0 in data0:
             input_d = {
                 'aresetn': 1,
                 's_axis_data_tvalid': 1, 
                 's_axis_data_tlast': 0,
-                's_axis_data_tdata': d0,
+                's_axis_data_tdata': signal.complex_to_uint(
+                    d0, width=se_input_width),
                 's_axis_config_tvalid': 0,
                 's_axis_config_tdata': 0,
                 's_axis_reload_tvalid': 0, 
@@ -108,7 +106,6 @@ class TestFirCompiler(unittest.TestCase):
         min_coeff = -pow(2, coeff_width-1)
         filter1 = [random.randint(min_coeff, max_coeff)
                    for i in range(params['n_taps'])]
-        filter1 = (1, 1, 1, 1, 1, 0)
         assert(len(filter1) % decimation_rate == 0)
         coefficients = []
         for i in range(len(filter1)//decimation_rate, 0, -1):
@@ -179,17 +176,16 @@ class TestFirCompiler(unittest.TestCase):
         n_data1 = (30//decimation_rate) * decimation_rate
         max_input = pow(2, input_width-1)-1
         min_input = -pow(2, input_width-1)
-        #data1 = [random.randint(min_input, max_input) 
-        #         + 1j*random.randint(min_input, max_input)
-        #         for i in range(n_data1)]
-        data1 = range(n_data1)
+        data1 = [random.randint(min_input, max_input) 
+                 + 1j*random.randint(min_input, max_input)
+                 for i in range(n_data1)]
         for d1 in data1:
             input_d = {
                 'aresetn': 1,
                 's_axis_data_tvalid': 1, 
                 's_axis_data_tlast': 0,
                 's_axis_data_tdata': signal.complex_to_uint(
-                    d1, width=se_output_width),
+                    d1, width=se_input_width),
                 's_axis_config_tvalid': 0,
                 's_axis_config_tdata': 0,
                 's_axis_reload_tvalid': 0, 
@@ -250,8 +246,6 @@ class TestFirCompiler(unittest.TestCase):
         out_decimated = [
             signal.uint_to_complex(d['m_axis_data_tdata'], width=se_output_width)
             for d in output_data if d['m_axis_data_tvalid']]
-        import pdb
-        pdb.set_trace()
         self.assertEqual((decimated0 + decimated1), out_decimated)
 
         
