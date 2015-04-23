@@ -31,7 +31,7 @@ class FifoGeneratorBuilder(builder.Builder):
             # the same interface as expected.
             ('read_data_count', 'true'),
             ('write_data_count', 'true'),
-        ))
+        )
         self.ips = (
             ('fifo_generator', self.ip_params, params['module_name']),
         )

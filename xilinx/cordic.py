@@ -14,7 +14,7 @@ class CordicBuilder(builder.Builder):
         super().__init__(params)
         module_name = params['module_name']
         input_width = params['input_width']
-        ip_params = [
+        self.ip_params = [
             ('functional_selection', 'square_root'),
             ('cartesian_has_tlast', 'true'),
             ('flow_control', 'blocking'),

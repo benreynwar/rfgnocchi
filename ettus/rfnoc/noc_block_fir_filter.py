@@ -35,9 +35,9 @@ class NocBlockFirFilterBuilder(builder.Builder):
         self.constants = {
             'n_coefficients': n_coefficients,
             'coefficient_width': int(
-                simple_fir_builder.ip_params['coefficient_width']),
+                simple_fir_builder.ip_params_dict['coefficient_width']),
             'data_width': int(
-                simple_fir_builder.ip_params['data_width']),
+                simple_fir_builder.ip_params_dict['data_width']),
             'output_width': int(
                 simple_fir_builder.constants['output_width']),
         }        

@@ -25,9 +25,7 @@ class FirCompilerBuilder(builder.Builder):
             filter_type = 'Decimation'
             if n_coefficients % decimation_rate != 0:
                 raise ValueError('Number of coefficients must be a multiple of decimation.')
-        #xco_filename = os.path.join(config.ettus_coregendir, 'simple_fir.xco')
-        #old_ip_params = builder.params_from_xco(xco_filename)
-        ip_params = [
+        self.ip_params = [
             ('filter_type', filter_type),
             ('decimation_rate', decimation_rate),
             ('coefficientsource', 'Vector'),
@@ -43,22 +41,11 @@ class FirCompilerBuilder(builder.Builder):
             ('sample_frequency', '200'),
 
         ]
-        # new_keys = [p[0] for p in ip_params]
-        # for old_param in old_ip_params.items():
-        #     if old_param[0] not in [
-        #             'component_name', 'coefficient_file', 'reset_data_vector',
-        #             'columnconfig', 's_config_sync_mode',
-        #             # Not sure why I have to remove this but it seems to still
-        #             # set coefficients to be signed.
-        #             'coefficient_sign', 
-        #             # Output width is disabled.
-        #             'output_width',
-        #     ] + new_keys:
-        #         ip_params.append(old_param)
+        self.ip_params_dict = dict(self.ip_params)
         self.constants = {
             'output_width': (
-                int(self.ip_params['coefficient_width']) +
-                int(self.ip_params['data_width']) + 
+                int(self.ip_params_dict['coefficient_width']) +
+                int(self.ip_params_dict['data_width']) + 
                 signal.logceil(n_coefficients)
                 )
         }
@@ -96,10 +83,10 @@ def get_fir_compiler_interface(params):
         ('m_axis_data_tdata', signal.StdLogicVector(width=96)),
     )
     constants = {
-        'coefficient_width': int(builder.ip_params['coefficient_width']),
-        'data_width': int(builder.ip_params['data_width']),
+        'coefficient_width': int(builder.ip_params_dict['coefficient_width']),
+        'data_width': int(builder.ip_params_dict['data_width']),
         'output_width': int(builder.constants['output_width']),
-        'decimation_rate': int(builder.ip_params['decimation_rate']),
+        'decimation_rate': int(builder.ip_params_dict['decimation_rate']),
     }        
     constants['se_data_width'] = sign_extend_to_8_bit_boundary(
         constants['data_width'])
@@ -131,12 +118,12 @@ class FirCompiler(object):
 
     def __init__(self, ip_params):
         self.ip_params = ip_params
-        self.data_width = int(ip_params['data_width'])
-        self.coefficient_width = int(ip_params['coefficient_width'])
-        self.decimation_rate = int(ip_params['decimation_rate'])
+        self.data_width = int(ip_params_dict['data_width'])
+        self.coefficient_width = int(ip_params_dict['coefficient_width'])
+        self.decimation_rate = int(ip_params_dict['decimation_rate'])
         self.se_data_width = sign_extend_to_8_bit_boundary(self.data_width)
         self.taps = list(reversed([
-            int(v) for v in ip_params['coefficientvector'].split(',')]))
+            int(v) for v in ip_params_dict['coefficientvector'].split(',')]))
         self.n_taps = len(self.taps)
         self.output_width = (self.data_width + self.coefficient_width +
                              signal.logceil(self.n_taps))
