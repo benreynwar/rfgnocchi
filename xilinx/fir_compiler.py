@@ -1,7 +1,6 @@
 import os
 import logging
 import math
-from collections import OrderedDict
 
 from pyvivado import builder, interface, signal
 
@@ -56,7 +55,6 @@ class FirCompilerBuilder(builder.Builder):
         #             'output_width',
         #     ] + new_keys:
         #         ip_params.append(old_param)
-        self.ip_params = OrderedDict(ip_params)
         self.constants = {
             'output_width': (
                 int(self.ip_params['coefficient_width']) +

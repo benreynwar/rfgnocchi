@@ -1,5 +1,3 @@
-from collections import OrderedDict
-
 from pyvivado import builder
 
 class FifoGeneratorBuilder(builder.Builder):
@@ -21,7 +19,7 @@ class FifoGeneratorBuilder(builder.Builder):
         self.width = params['width']
         self.depth = params['depth']
         assert(self.implementation_type in self.implementation_types)
-        self.ip_params = OrderedDict((
+        self.ip_params = (
             ('fifo_implementation', self.implementation_type),
             ('performance_options', 'first_word_fall_through'),
             ('interface_type', 'native'),

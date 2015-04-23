@@ -1,7 +1,6 @@
 import os
 import logging
 import math
-from collections import OrderedDict
 
 from pyvivado import builder, interface, signal
 
@@ -24,7 +23,6 @@ class CordicBuilder(builder.Builder):
             ('input_width', input_width),
             ('aresetn', 'true'),
         ]
-        self.ip_params = OrderedDict(ip_params)
         self.ips = [
             ('cordic', self.ip_params, module_name),
         ]

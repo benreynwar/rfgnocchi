@@ -8,20 +8,20 @@ class AxisCombinerBuilder(builder.Builder):
         input_stream_width = params['input_stream_width']
         assert(input_stream_width % 8 == 0)
         module_name = params['module_name']
-        ip_params = {
-            'HAS_ACLKEN': 0,
+        ip_params = (
+            ('HAS_ACLKEN', 0),
             # Produces error signal if meta-info for input streams does not
             # match
-            'HAS_CMD_ERR': 0, 
-            'HAS_TKEEP': 0,
-            'HAS_TLAST': 1,
-            'HAS_TSTRB': 0,
-            'MASTER_PORT_NUM': 0,
-            'NUM_SI': n_input_streams,
-            'TDATA_NUM_BYTES': input_stream_width//8,
-            'TDEST_WIDTH': 0,
-            'TID_WIDTH': 0,
-            'TUSER_WIDTH': 0,
+            ('HAS_CMD_ERR', 0), 
+            ('HAS_TKEEP', 0),
+            ('HAS_TLAST', 1),
+            ('HAS_TSTRB', 0),
+            ('MASTER_PORT_NUM', 0),
+            ('NUM_SI', n_input_streams),
+            ('TDATA_NUM_BYTES', input_stream_width//8),
+            ('TDEST_WIDTH', 0),
+            ('TID_WIDTH', 0),
+            ('TUSER_WIDTH', 0),
         }
         self.ips = [
             ('axis_combiner', ip_params, module_name),

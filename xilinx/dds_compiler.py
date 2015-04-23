@@ -1,7 +1,6 @@
 import os
 import logging
 import math
-from collections import OrderedDict
 
 from pyvivado import builder, interface, signal
 
@@ -25,23 +24,22 @@ class DDSCompilerBuilder(builder.Builder):
             'partspresent', 'phase_generator_and_sin_cos_lut')
         has_aresetn = params.get('has_resetn', 'true')
         assert(partspresent in self.partspresent_options)
-        ip_params = [
+        self.ip_params = [
             ('partspresent', partspresent),
         ]
         if partspresent == 'phase_generator_and_sin_cos_lut':
-            ip_params += [
+            self.ip_params += [
                 ('parameter_entry', 'hardware_parameters'),
                 ('phase_increment', 'programmable'),
                 ('phase_offset', 'programmable'),
                 ('phase_width', phase_width),
                 ('has_phase_out', 'false'),
             ]
-        ip_params += [
+        self.ip_params += [
             ('has_tready', 'true'),
             ('output_width', output_width),
             ('has_aresetn', has_aresetn),
         ]
-        self.ip_params = OrderedDict(ip_params)
         self.ips = [
             ('dds_compiler', self.ip_params, module_name),
         ]

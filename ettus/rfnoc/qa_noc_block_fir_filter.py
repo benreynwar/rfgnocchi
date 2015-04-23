@@ -16,6 +16,12 @@ logger = logging.getLogger(__name__)
 class TestNocBlockFirFilter(unittest.TestCase):
     
     def test_one(self):
+        '''
+        This doesn't test functionality. Just that everything gets built
+        and simulations.
+
+        Currently it is not functional.
+        '''
 
         directory = os.path.abspath('proj_qa_testnocblockfirfilter')
         interface = noc_block_fir_filter.get_noc_block_fir_filter_interface(params={})
@@ -35,7 +41,7 @@ class TestNocBlockFirFilter(unittest.TestCase):
                              for c in coefficients]
         # The reload commands send the taps.
         settings_commands = [(reload_address, c) for c in uint_coefficients]
-        # And the config command actives them.
+        # And the config command activatees them.
         settings_commands.append((config_address, 0))
         settings_packet = chdr.make_settings_packet(settings_commands)
         
@@ -46,13 +52,32 @@ class TestNocBlockFirFilter(unittest.TestCase):
         max_input = pow(2, input_width-1)-1
         min_input = -pow(2, input_width-1)
         f = pow(2, se_input_width)
-        data = [
-            signal.sint_to_uint(
-                random.randint(min_input, max_input), width=se_input_width) +
-            signal.sint_to_uint(
-                random.randint(min_input, max_input), width=se_input_width)*f                
-            for i in range(n_data)]
+        complex_data = [random.randint(min_input, max_input) 
+                        + 1j*random.randint(min_input, max_input)
+                        for i in range(n_data)]
+        data = [signal.complex_to_uint(c, width=se_input_width)
+                for c in complex_data]
         data_packet = chdr.make_data_packet(data)
+
+        wait_data = []
+        for i in range(10):
+            wait_data.append({
+                'bus_rst': 1,
+                'ce_rst': 1,
+                'i_tvalid': 0,
+                'i_tlast': 0,
+                'i_tdata': 0,
+                'o_tready': 0,
+            })
+        for i in range(10):
+            wait_data.append({
+                'bus_rst': 0,
+                'ce_rst': 0,
+                'i_tvalid': 0,
+                'i_tlast': 0,
+                'i_tdata': 0,
+                'o_tready': 1,
+            })
 
         input_data = chdr.packets_to_noc_inputs((settings_packet, data_packet))
 
@@ -65,9 +90,9 @@ class TestNocBlockFirFilter(unittest.TestCase):
         errors = t.get_errors()
         self.assertEqual(len(errors), 0)
 
-        runtime = '{} ns'.format((len(input_data) + 20) * 10)
+        runtime = '{} ns'.format((len(wait_data+input_data) + 20) * 10)
         errors, output_data = p.run_simulation(
-            input_data=[], runtime=runtime)
+            input_data=wait_data+input_data, runtime=runtime)
         self.assertEqual(len(errors), 0)
 
         

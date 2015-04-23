@@ -11,10 +11,10 @@ class ComplexMultiplierBuilder(builder.Builder):
         super().__init__(params)
         # Input width is 16+16 for inputs
         # Output is (33+7) + (33+7)
-        self.ip_params = {
-            'flowcontrol': 'blocking',
-            'hasatlast': 'true',
-        }
+        self.ip_params = (
+            ('flowcontrol', 'blocking'),
+            ('hasatlast', 'true'),
+        )
         self.ips = [
             ('cmpy', self.ip_params, params['module_name'])
         ] 
