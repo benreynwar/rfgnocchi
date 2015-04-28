@@ -4,7 +4,7 @@ Library of HDL signal-processing blocks for use with RFNoC.
 
 This project is nowhere near ready for anyone to use seriously.
 
-RFgnocchi uses the python package 'pyvivado (https://github.com/benreynwar/pyvivado)' for testing the projects.
+RFgnocchi uses the python package [pyvivado](https://github.com/benreynwar/pyvivado) for testing the projects.
 
 Also since I currently don't have compatible hardware these modules will
 only have been tested through simulation.
