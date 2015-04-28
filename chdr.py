@@ -76,10 +76,14 @@ def packets_to_noc_inputs(packets):
         'bus_rst': 0,
     }
     for packet in packets:
-        for line in packet:
+        for i, line in enumerate(packet):
+            if i+1 == len(packet):
+                i_tlast = 1
+            else:
+                i_tlast = 0
             d = {
                 'i_tdata': line,
-                'i_tlast': 0,
+                'i_tlast': i_tlast,
                 'i_tvalid': 1,
                 'o_tready': 1,
                 'ce_rst': 0,

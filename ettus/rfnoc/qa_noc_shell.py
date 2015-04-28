@@ -15,10 +15,8 @@ class TestNocShell(unittest.TestCase):
     
     def test_one(self):
         '''
-        This doesn't test functionality. Just that everything gets built
-        and simulations.
-
-        Currently it is not functional.
+        Currently just testing settings.
+        N.B. Only one setting per settings packet.
         '''
 
         directory = os.path.abspath('proj_qa_testnocshell')
@@ -28,12 +26,13 @@ class TestNocShell(unittest.TestCase):
         }
         interface = noc_shell.get_noc_shell_interface(params=params)
         # Create a setting packet
-        settings_commands = (
+        settings_commands = [
             (100, 1),
             (7, 6),
             (23, 189),
-        )
-        settings_packet = chdr.make_settings_packet(settings_commands)
+        ]
+        settings_packets = [chdr.make_settings_packet([command]) for command in 
+                            settings_commands]
 
         wait_data = []
         for i in range(10):
@@ -41,7 +40,7 @@ class TestNocShell(unittest.TestCase):
         for i in range(10):
             wait_data.append(noc_shell.make_inputs())
 
-        noc_inputs = chdr.packets_to_noc_inputs([settings_packet])
+        noc_inputs = chdr.packets_to_noc_inputs(settings_packets)
         input_data = [noc_shell.make_inputs_from_noc_inputs(d)
                       for d in noc_inputs]
         for i in range(50):
@@ -62,10 +61,7 @@ class TestNocShell(unittest.TestCase):
         self.assertEqual(len(errors), 0)
         output_settings = [(d['set_addr'], d['set_data']) for d in output_data
                            if d['set_stb']]
-        import pdb
-        pdb.set_trace()
-
-
+        self.assertEqual(settings_commands, output_settings)
         
 if __name__ == '__main__':
     config.setup_logging(logging.DEBUG)
