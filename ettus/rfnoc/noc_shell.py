@@ -113,7 +113,7 @@ def make_inputs(bus_rst=0,
         'str_src_tvalid': str_src_tvalid,
     }    
 
-def make_inputs_from_noc_inputs(noc_inputs):
+def make_inputs_from_noc_inputs(noc_inputs, str_sink_tready=0):
     return make_inputs(
         i_tdata=noc_inputs['i_tdata'],
         i_tlast=noc_inputs['i_tlast'],
@@ -121,6 +121,7 @@ def make_inputs_from_noc_inputs(noc_inputs):
         o_tready=noc_inputs['o_tready'],
         reset=noc_inputs['ce_rst'],
         bus_rst=noc_inputs['bus_rst'],
+        str_sink_tready=str_sink_tready,
     )
     
 

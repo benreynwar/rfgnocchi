@@ -56,6 +56,9 @@ def make_data_packet(data, time=None, sid=0, seqnum=0):
         size=len(data)//2, seqnum=seqnum, time=time, sid=sid)
     packet.append(header)
     pp = pow(2, 32)
+    for d in data:
+        if d > pp-1:
+            raise ValueError('Integer does not fit in 32 bits.')
     paired_data = [(data[2*i], data[2*i+1]) for i in range(len(data)//2)]
     combined_data = [d0*pp+d1 for d0, d1 in paired_data]
     packet += combined_data
