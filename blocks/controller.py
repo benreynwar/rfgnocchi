@@ -5,7 +5,6 @@ import testfixtures
 from pyvivado import interface, signal, builder
 
 from rfgnocchi import config
-from rfgnocchi.ettus.rfnoc import axi_round_and_clip_complex
 from rfgnocchi.xilinx import complex_multiplier, dds_compiler
 from rfgnocchi.blocks import controller_inner
 

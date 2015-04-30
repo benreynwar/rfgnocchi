@@ -4,43 +4,9 @@ import testfixtures
 
 from pyvivado import interface, signal, builder
 
-from rfgnocchi import config
+from rfgnocchi import config, ettus
 
 logger = logging.getLogger(__name__)
-
-
-class MultBuilder(builder.Builder):
-
-    def __init__(self, params={}):
-        super().__init__(params)
-        self.simple_filenames = [
-            os.path.join(config.ettus_rfnocdir, 'mult.v'),
-            os.path.join(config.ettus_rfnocdir, 'axi_pipe_join.v'),
-            os.path.join(config.ettus_rfnocdir, 'axi_pipe.v'),
-            os.path.join(config.ettus_rfnocdir, 'axi_join.v'),
-        ]
-
-class MultAddBuilder(builder.Builder):
-
-    def __init__(self, params={}):
-        super().__init__(params)
-        self.simple_filenames = [
-            os.path.join(config.ettus_rfnocdir, 'mult_add.v'),
-            os.path.join(config.ettus_rfnocdir, 'axi_pipe_mac.v'),
-            os.path.join(config.ettus_rfnocdir, 'axi_join.v'),
-            os.path.join(config.ettus_rfnocdir, 'axi_pipe.v'),
-        ]
-
-class MultRCBuilder(builder.Builder):
-    
-    def __init__(self, params={}):
-        super().__init__(params)
-        self.builders = [
-            MultBuilder(params),
-        ]
-        self.simple_filenames = [
-            os.path.join(config.ettus_rfnocdir, 'mult_rc.v'),
-        ]
 
 
 def get_mult_interface(params):
@@ -51,7 +17,7 @@ def get_mult_interface(params):
     drop_top_P = params['drop_top_P']
     latency = params['latency']
     cascade_out = params['cascade_out']
-    builder = MultBuilder()
+    builder = ettus.get_builder('mult')
     packages = []
     module_parameters = {
         'WIDTH_A': width_A,

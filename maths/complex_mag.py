@@ -4,8 +4,7 @@ import testfixtures
 
 from pyvivado import interface, signal, builder
 
-from rfgnocchi import config
-from rfgnocchi.ettus.rfnoc import complex_to_magsq
+from rfgnocchi import config, ettus
 from rfgnocchi.xilinx import cordic
 
 logger = logging.getLogger(__name__)
@@ -16,7 +15,7 @@ class ComplexMagBuilder(builder.Builder):
         super().__init__(params)
         width = params['width']
         self.builders = [
-            complex_to_magsq.ComplexToMagSqBuilder({}),
+            ettus.get_builder('complex_to_magsq'),
             cordic.CordicBuilder({
                 'module_name': 'square_root',
                 'input_width': 2*width,

@@ -4,9 +4,7 @@ import testfixtures
 
 from pyvivado import interface, signal, builder
 
-from rfgnocchi import config
-from rfgnocchi.ettus.rfnoc import axi_round_and_clip_complex
-from rfgnocchi.ettus.rfnoc import mult
+from rfgnocchi import config, ettus
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +13,7 @@ class ControllerInnerBuilder(builder.Builder):
     def __init__(self, params={}):
         super().__init__(params)
         self.builders = [
-            mult.MultBuilder({}),
+            ettus.get_builder('mult'),
         ]
         self.simple_filenames = [
             os.path.join(config.basedir, 'blocks', 'controller_inner.vhd'),

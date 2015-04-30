@@ -4,8 +4,7 @@ import testfixtures
 
 from pyvivado import interface, signal, builder
 
-from rfgnocchi import config
-from rfgnocchi.ettus.rfnoc import axi_round_and_clip_complex
+from rfgnocchi import config, ettus
 from rfgnocchi.xilinx import dds_compiler, complex_multiplier
 
 logger = logging.getLogger(__name__)
@@ -23,7 +22,7 @@ class RotatorCCBuilder(builder.Builder):
                 'phase_width': 16,
                 'output_width': 16,
             }),
-            axi_round_and_clip_complex.AxiRoundAndClipComplexBuilder({}),
+            ettus.get_builder('axi_round_and_clip_complex'),
         ]
         self.simple_filenames = [
             os.path.join(config.basedir, 'blocks', 'rotator_cc.vhd'),
