@@ -1,6 +1,11 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
+use ieee.numeric_std.all;
+
+--- Packets are returned but the returns values of sums of three of the input
+--- values (i.e. running sum).
+--- Also a configurable parameter is added to the sum to test config.
 entity noc_block_dummy is
 generic (
   NOC_ID: std_logic_vector(63 downto 0) := x"FFFF_0000_0000_0000"
@@ -69,6 +74,13 @@ architecture arch of noc_block_dummy is
   signal m_axis_config_tvalid: std_logic_vector(0 downto 0);
   signal m_axis_config_tlast: std_logic_vector(0 downto 0);
   signal m_axis_config_tready: std_logic_vector(0 downto 0);
+  signal summed_tdata: unsigned(33 downto 0);
+  signal summed_tvalid: std_logic;
+  signal summed_tlast: std_logic;
+  signal resized_newdata: unsigned(33 downto 0);
+  signal history0: unsigned(33 downto 0);
+  signal history1: unsigned(33 downto 0);
+  signal configed: unsigned(33 downto 0);
 
 begin
 
@@ -150,14 +162,58 @@ begin
       m_axis_config_tvalid => m_axis_config_tvalid,
       m_axis_config_tready => m_axis_config_tready
     );
-  m_axis_config_tready <= (others => '0');
+  m_axis_config_tready <= (others => '1');
   s_axis_data_tuser <= (others => '0');
   next_dst <= (others => '0');
 
   -- Define the dummy
-  s_axis_data_tdata <= m_axis_data_tdata;
-  s_axis_data_tlast <= m_axis_data_tlast;
-  s_axis_data_tvalid <= m_axis_data_tvalid;
-  m_axis_data_tready <= s_axis_data_tready;
+  -------------------
+  
+  -- Update the configurable parameter.
+  process(ce_clk)
+  begin
+    if rising_edge(ce_clk) then
+      if (ce_rst = '1') then
+        configed <= (others => '0');
+      else
+        if (m_axis_config_tvalid(0) = '1') then
+          configed <= resize(unsigned(m_axis_config_tdata), 34);
+        end if;
+      end if;
+    end if;
+  end process;
+    
+  
+  -- Sum last 3 inputs add a configurable parameter.
+  process(ce_clk)
+  begin
+    if rising_edge(ce_clk) then
+      s_axis_data_tlast <= m_axis_data_tlast;
+      if (ce_rst = '1') then
+        history0 <= (others => '0');
+        history1 <= (others => '0');
+        summed_tvalid <= '0';
+      else
+        if ((m_axis_data_tvalid and m_axis_data_tready) = '1') then
+          if (m_axis_data_tlast = '1') then
+            history0 <= (others => '0');
+            history1 <= (others => '0');
+          else
+            history0 <= resized_newdata;
+            history1 <= history0;
+          end if;
+          summed_tdata <= resized_newdata + history0 + history1 + configed;
+          summed_tlast <= m_axis_data_tlast;
+          summed_tvalid <= '1';
+        elsif (s_axis_data_tready = '1') then
+          summed_tvalid <= '0';
+        end if;
+      end if;
+    end if;
+  end process;
+  resized_newdata <= resize(unsigned(m_axis_data_tdata), 34);
+  s_axis_data_tvalid <= summed_tvalid;
+  s_axis_data_tdata <= std_logic_vector(summed_tdata(31 downto 0));
+  m_axis_data_tready <= (not summed_tvalid) or (s_axis_data_tready);
 
 end arch;

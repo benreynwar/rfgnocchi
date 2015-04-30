@@ -59,7 +59,6 @@ class CHDRPacket(object):
         remainder -= size * cls.size_offset
         sid = remainder // cls.sid_offset
         remainder -= sid * cls.sid_offset
-        assert(has_time == 0)
         to_boolean = {0: False, 1: True}
         return {
             'is_extension_context': to_boolean[is_extension_context],
