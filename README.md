@@ -2,13 +2,14 @@
 
 Library of HDL signal-processing blocks for use with RFNoC.
 
-This project is nowhere near ready for anyone to use seriously.
+At the moment this repository is less a library of useful blocks, and more an example of
+how to use [pyvivado](https://github.com/benreynwar/pyvivado) to develop new modules for
+use with RFNoC.
 
-RFgnocchi uses the python package [pyvivado](https://github.com/benreynwar/pyvivado) for testing the projects.
+Since I don't have compatible hardware these modules have only been tested through simulation.
 
-Also since I currently don't have compatible hardware these modules will
-only have been tested through simulation.
+The license is MIT.
+But since most of the modules are tied pretty tightly to Xilinx or Ettus Research IP those
+licenses will be constraining.
 
-The license is MIT except for files that I've taken from elsewhere and specify otherwise.
-
-Some of the blocks use code from the Ettus Research repository at https://github.com/ettusresearch/fpga/tree/rfnoc-devel which you'll have to clone independently and which comes under a different license.
+Some of the blocks use code from the Ettus Research repository at https://github.com/ettusresearch/fpga/tree/rfnoc-devel which you'll have to clone independently.
