@@ -3,6 +3,7 @@
 __pycache__
 proj_qa*
 *.pyc
-vivado.jou
-vivado.log
+vivado*.jou
+vivado*.log
 vivado_pid*.str
+.\#*
