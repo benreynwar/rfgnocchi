@@ -43,7 +43,9 @@ class TestNocBlockFirFilter(unittest.TestCase):
         settings_commands = [(reload_address, c) for c in uint_coefficients]
         # And the config command activatees them.
         settings_commands.append((config_address, 0))
-        settings_packet = chdr.make_settings_packet(settings_commands)
+        settings_packets = [chdr.CHDRPacket.create_settings_packet(
+            address=address, value=value)
+                            for address, value in settings_commands]
         
         # Make a packet with the data to filter.
         n_data = 30
@@ -57,7 +59,7 @@ class TestNocBlockFirFilter(unittest.TestCase):
                         for i in range(n_data)]
         data = [signal.complex_to_uint(c, width=se_input_width)
                 for c in complex_data]
-        data_packet = chdr.make_data_packet(data)
+        data_packet = chdr.CHDRPacket.create_data_packet(data)
 
         wait_data = []
         for i in range(10):
@@ -79,7 +81,7 @@ class TestNocBlockFirFilter(unittest.TestCase):
                 'o_tready': 1,
             })
 
-        input_data = chdr.packets_to_noc_inputs((settings_packet, data_packet))
+        input_data = chdr.packets_to_noc_inputs(settings_packets + [data_packet])
 
         p = project.FileTestBenchProject.create_or_update(
             interface=interface, directory=directory,

@@ -32,8 +32,9 @@ class TestNocShell(unittest.TestCase):
             (7, 6),
             (23, 189),
         ]
-        settings_packets = [chdr.make_settings_packet([command]) for command in 
-                            settings_commands]
+        settings_packets = [chdr.CHDRPacket.create_settings_packet(
+            address=address, value=value)
+                            for address, value in settings_commands]
         # Make some data packets.
         n_data_packets = 5
         data_packets = []
@@ -48,7 +49,7 @@ class TestNocShell(unittest.TestCase):
             data_lump = [random.randint(0, max_data)
                          for i in range(packet_size)]
             input_data_lumps.append(data_lump)
-            data_packets.append(chdr.make_data_packet(data_lump))
+            data_packets.append(chdr.CHDRPacket.create_data_packet(data_lump))
             combined_lump = []
             first = True
             combined = None
@@ -97,8 +98,6 @@ class TestNocShell(unittest.TestCase):
                 if d['str_sink_tlast']:
                     output_data_lumps.append(data_packet[1:])
                     data_packet = []
-        import pdb
-        pdb.set_trace()
         self.assertEqual(settings_commands, output_settings)
         self.assertEqual(output_data_lumps, input_combined_data_lumps)
         
