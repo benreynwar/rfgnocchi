@@ -18,8 +18,7 @@ class TestMinimum(unittest.TestCase):
 
         directory = os.path.abspath('proj_testminimum')
         width = 8
-        n_stages = 5
-        n_inputs = pow(2, n_stages)
+        n_inputs = 9
         n_data = 10
         data = []
         maxvalue = pow(2, width)-1
@@ -65,7 +64,7 @@ class TestMinimum(unittest.TestCase):
 
         interface = minimum.get_minimum_interface({
             'width': width,
-            'n_stages': n_stages,
+            'n_inputs': n_inputs,
         })
 
         p = project.FileTestBenchProject.create_or_update(

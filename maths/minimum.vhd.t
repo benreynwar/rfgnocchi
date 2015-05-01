@@ -20,7 +20,7 @@ entity minimum is
     clk: in std_logic;
     reset: in std_logic;
     i_valid: in std_logic;
-    i_data: in std_logic_vector((2**{{n_stages}})*WIDTH-1 downto 0);
+    i_data: in std_logic_vector(({{n_inputs}})*WIDTH-1 downto 0);
     i_ready: out std_logic;
     o_valid: out std_logic;
     o_data: out std_logic_vector(WIDTH-1 downto 0);
@@ -32,6 +32,7 @@ end minimum;
 
 architecture arch of minimum is
   constant N_STAGES: integer := {{n_stages}};
+  constant N_INPUTS: integer := {{n_inputs}};
   {% for i in range(n_stages) %}
   signal to_stage{{i}}_valid: std_logic;
   signal to_stage{{i}}_data: std_logic_vector(2**(N_STAGES-{{i}})*WIDTH-1 downto 0);
@@ -43,9 +44,9 @@ architecture arch of minimum is
   signal from_stage{{i}}_ready: std_logic;
   {% endfor %}
 begin
-
   to_stage0_valid <= i_valid;
-  to_stage0_data <= i_data;
+  to_stage0_data(N_INPUTS*WIDTH-1 downto 0) <= i_data;
+  to_stage0_data(2**N_STAGES*WIDTH-1 downto N_INPUTS*WIDTH) <= (others => '1');
   to_stage0_indices <= "";
   i_ready <= to_stage0_ready;
   o_valid <= from_stage{{n_stages-1}}_valid;
