@@ -59,11 +59,14 @@ class TestNocBlockFirFilter(unittest.TestCase):
                         for i in range(n_data)]
         data = [signal.complex_to_uint(c, width=se_input_width)
                 for c in complex_data]
+        # Do the filtering in python so we know what data to expect out.
         expected_data = []
         extended_data = [0] * (n_coefficients-1) + complex_data
         for i in range(n_data):
             expected = sum([a*b for a, b in zip(
                 coefficients, extended_data[i: i+n_coefficients])])
+            # Divide the results by a scaling factor.
+            # This implies coefficients go from 0 to 0.5 within their width.
             expected /= pow(2, coeff_width)
             maxval = pow(2, 15)-1
             minval = -pow(2, 15)
@@ -74,6 +77,8 @@ class TestNocBlockFirFilter(unittest.TestCase):
                            
         data_packet = chdr.CHDRPacket.create_data_packet(data)
 
+        # Create input simulation data.
+        # Start off reseting for a bit.
         wait_data = []
         for i in range(10):
             wait_data.append({
@@ -94,8 +99,10 @@ class TestNocBlockFirFilter(unittest.TestCase):
                 'o_tready': 1,
             })
 
+        # Send the packets
         input_data = chdr.packets_to_noc_inputs(settings_packets + [data_packet])
 
+        # And then wait for the output.
         for i in range(200):
             input_data.append(noc.make_inputs(o_tready=1))
 
@@ -116,6 +123,7 @@ class TestNocBlockFirFilter(unittest.TestCase):
         output_packets = chdr.noc_outputs_to_packets(output_data)
         # Filter out the settings replies.
         output_lumps = [p.data() for p in output_packets if not p.is_extension_context]
+        # And check that we got the expected filtered data.
         self.assertEqual(len(output_lumps), 1)
         self.assertEqual(len(output_lumps[0]), n_data)
         output_uints = output_lumps[0]

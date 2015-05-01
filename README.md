@@ -5,6 +5,8 @@ Library of HDL signal-processing blocks for use with RFNoC.
 At the moment this repository is less a library of useful blocks, and more an example of
 how to use [pyvivado](https://github.com/benreynwar/pyvivado) to develop new modules for
 use with RFNoC.
+The best example at the moment is the test of the noc_block_fir_filter (see
+[ettus/rfnoc/noc_block_fir_filter.py] and [ettus/rfnoc/qa_noc_block_fir_filter.py])
 
 Since I don't have compatible hardware these modules have only been tested through simulation.
 

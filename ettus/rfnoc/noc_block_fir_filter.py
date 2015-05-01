@@ -16,10 +16,12 @@ class NocBlockFirFilterBuilder(builder.Builder):
         super().__init__(params)
         module_name = 'noc_block_fir_filter'
         n_coefficients = 21
+        # The simple_fir_builder specifies the Xilinx IP block.
         simple_fir_builder = FirCompilerBuilder({
             'module_name': 'simple_fir',
             'n_taps': n_coefficients,
         })
+        # The constants are useful for tests that need to know these values.
         self.constants = {
             'n_coefficients': n_coefficients,
             'coefficient_width': int(
@@ -29,6 +31,8 @@ class NocBlockFirFilterBuilder(builder.Builder):
             'output_width': int(
                 simple_fir_builder.constants['output_width']),
         }        
+        # We also specify dependencies of a few Ettus modules.
+        # Their dependencies will be retrieved by their builders.
         self.builders = [
             simple_fir_builder,
             ettus.get_builder('noc_shell'),
