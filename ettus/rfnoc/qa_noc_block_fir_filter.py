@@ -81,23 +81,9 @@ class TestNocBlockFirFilter(unittest.TestCase):
         # Start off reseting for a bit.
         wait_data = []
         for i in range(10):
-            wait_data.append({
-                'bus_rst': 1,
-                'ce_rst': 1,
-                'i_tvalid': 0,
-                'i_tlast': 0,
-                'i_tdata': 0,
-                'o_tready': 0,
-            })
+            wait_data.append(noc.make_inputs(bus_rst=1, ce_rst=1))
         for i in range(10):
-            wait_data.append({
-                'bus_rst': 0,
-                'ce_rst': 0,
-                'i_tvalid': 0,
-                'i_tlast': 0,
-                'i_tdata': 0,
-                'o_tready': 1,
-            })
+            wait_data.append(noc.make_inputs(o_tready=1))
 
         # Send the packets
         input_data = chdr.packets_to_noc_inputs(settings_packets + [data_packet])
