@@ -18,7 +18,7 @@ class TestComplexMag(unittest.TestCase):
     def test_one(self):
 
         directory = os.path.abspath('proj_qa_testcomplexmag')
-        width = 16
+        width = 11
         params = {
             'width': width,
         }

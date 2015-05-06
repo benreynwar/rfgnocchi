@@ -22,9 +22,11 @@ entity complex_mag is
 end complex_mag;
 
 architecture arch of complex_mag is
-  -- SE_MAG_WIDTH is (WIDTH+1) sign extended to 8 bits
-constant SE_MAG_WIDTH: positive := integer(ceil(real(WIDTH+1)/8.0)*8.0);
-  signal magsq_tdata: std_logic_vector(2*WIDTH-1 downto 0);
+  -- SE_MAG_WIDTH is WIDTH+1 sign extended to 8 bits
+  constant SE_DOUBLE_WIDTH: positive := integer(ceil(real(2*WIDTH)/8.0)*8.0);
+  constant SE_MAG_WIDTH: positive := integer(ceil(real(WIDTH+1)/8.0)*8.0);
+  signal magsq_data_notextended: std_logic_vector(2*WIDTH-1 downto 0);
+  signal magsq_tdata: std_logic_vector(SE_DOUBLE_WIDTH-1 downto 0);
   signal magsq_tvalid: std_logic;
   signal magsq_tlast: std_logic;
   signal magsq_tready: std_logic;
@@ -46,11 +48,14 @@ begin
       i_tvalid => i_tvalid,
       i_tlast => i_tlast,
       i_tready => i_tready,
-      o_tdata => magsq_tdata,
+      o_tdata => magsq_data_notextended,
       o_tvalid => magsq_tvalid,
       o_tlast => magsq_tlast,
       o_tready => magsq_tready
       );
+
+  magsq_tdata(2*WIDTH-1 downto 0) <= magsq_data_notextended;
+  magsq_tdata(SE_DOUBLE_WIDTH-1 downto 2*WIDTH) <= (others => '0');
 
   sr: entity work.square_root
     port map (
