@@ -7,3 +7,7 @@ vivado*.jou
 vivado*.log
 vivado_pid*.str
 .\#*
+webtalk*.jou
+webtalk*.log
+vivado_pid*
+hs_err_pid*

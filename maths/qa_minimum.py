@@ -31,10 +31,10 @@ class TestMinimum(unittest.TestCase):
         wait_data = []
         for wait_index in range(n_wait_lines):
             wait_data.append({
-                'reset': 0 ,
-                'i_valid': 0,
                 'i_data': 0,
+                'i_valid': 0,
                 'o_ready': 1,
+                'reset': 1,
             })
 
         # Make input and expected data
@@ -43,10 +43,10 @@ class TestMinimum(unittest.TestCase):
         expected_indices = []
         for values in data:
             input_data.append({
-                'reset': 0,
                 'i_data': signal.list_of_uints_to_uint(values, width=width),
                 'i_valid': 1,
                 'o_ready': 1,
+                'reset': 0,
             })
             minval = None
             for i, v in enumerate(values):
@@ -56,10 +56,10 @@ class TestMinimum(unittest.TestCase):
             expected_data.append(minval)
             expected_indices.append(minindex)
         input_data.append({
-            'reset': 0,
             'i_data': 0,
             'i_valid': 0,
             'o_ready': 1,
+            'reset': 0,
         })
 
         interface = minimum.get_minimum_interface({

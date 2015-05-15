@@ -4,39 +4,42 @@ from pyvivado import builder, interface, signal, utils
 
 from rfgnocchi import config
 
-minimum_2inputs_builder = builder.make_simple_builder(
-    filenames=[os.path.join(config.basedir, 'maths', 'minimum_2inputs.vhd')],
-)({})
+#minimum_2inputs_builder = builder.make_simple_builder(
+#    filenames=[os.path.join(config.basedir, 'maths', 'minimum_2inputs.vhd')],
+#)({})
 
-minimum_stage_builder = builder.make_simple_builder(
-    filenames=[os.path.join(config.basedir, 'maths', 'minimum_stage.vhd')],
-    builders=[minimum_2inputs_builder],
-    )({})
+#minimum_stage_builder = builder.make_simple_builder(
+#    filenames=[os.path.join(config.basedir, 'maths', 'minimum_stage.vhd')],
+#    builders=[minimum_2inputs_builder],
+#    )({})
 
 
 class MinimumBuilder(builder.Builder):
 
-    template_fn=os.path.join(config.basedir, 'maths', 'minimum.vhd.t')
+    #template_fn=os.path.join(config.basedir, 'maths', 'minimum.vhd.t')
 
     def __init__(self, params):
         super().__init__(params)
-        self.n_inputs = params['n_inputs']
-        self.n_stages = signal.logceil(self.n_inputs)
-        self.builders = [minimum_stage_builder]
+        #self.n_inputs = params['n_inputs']
+        #self.n_stages = signal.logceil(self.n_inputs)
+        #self.builders = [minimum_stage_builder]
+        self.simple_filenames = [
+            os.path.join(config.basedir, 'maths', 'minimum.vhd'),
+        ]
 
-    def output_filename(self, directory):
-        return os.path.join(directory, builder.template_fn_to_output_fn(
-            self.template_fn, self.params))
+    #def output_filename(self, directory):
+    #    return os.path.join(directory, builder.template_fn_to_output_fn(
+    #        self.template_fn, self.params))
         
 
-    def required_filenames(self, directory):
-        return [self.output_filename(directory)]
+    #def required_filenames(self, directory):
+    #    return [self.output_filename(directory)]
 
-    def build(self, directory):
-        utils.format_file(
-            template_filename=self.template_fn,
-            output_filename=self.output_filename(directory),
-            parameters={'n_inputs': self.n_inputs, 'n_stages': self.n_stages})
+    #def build(self, directory):
+    #    utils.format_file(
+    #        template_filename=self.template_fn,
+    #        output_filename=self.output_filename(directory),
+    #        parameters={'n_inputs': self.n_inputs, 'n_stages': self.n_stages})
 
 
 def get_minimum_interface(params):
@@ -45,9 +48,10 @@ def get_minimum_interface(params):
     n_inputs = params['n_inputs']
     module_parameters = {
         'WIDTH': width,
+        'N_INPUTS': n_inputs,
     }
     builder = MinimumBuilder({
-        'n_inputs': n_inputs,
+        #'n_inputs': n_inputs,
     })
     wires_in = (
         ('reset', signal.std_logic_type),
