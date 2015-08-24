@@ -74,6 +74,10 @@ architecture arch of noc_block_dummy is
   signal m_axis_config_tvalid: std_logic_vector(0 downto 0);
   signal m_axis_config_tlast: std_logic_vector(0 downto 0);
   signal m_axis_config_tready: std_logic_vector(0 downto 0);
+  signal m_axis_pkt_len_tdata: std_logic_vector(15 downto 0);
+  signal m_axis_pkt_len_tvalid: std_logic;
+  signal m_axis_pkt_len_tready: std_logic;
+  
   signal summed_tdata: unsigned(33 downto 0);
   signal summed_tvalid: std_logic;
   signal summed_tlast: std_logic;
@@ -83,6 +87,8 @@ architecture arch of noc_block_dummy is
   signal configed: unsigned(33 downto 0);
 
 begin
+
+  m_axis_pkt_len_tvalid <= '0';
 
   shell: entity work.noc_shell
     generic map (
@@ -160,7 +166,10 @@ begin
       m_axis_config_tdata => m_axis_config_tdata,
       m_axis_config_tlast => m_axis_config_tlast,
       m_axis_config_tvalid => m_axis_config_tvalid,
-      m_axis_config_tready => m_axis_config_tready
+      m_axis_config_tready => m_axis_config_tready,
+      m_axis_pkt_len_tdata => m_axis_pkt_len_tdata,
+      m_axis_pkt_len_tvalid => m_axis_pkt_len_tvalid,
+      m_axis_pkt_len_tready => m_axis_pkt_len_tready
     );
   m_axis_config_tready <= (others => '1');
   s_axis_data_tuser <= (others => '0');

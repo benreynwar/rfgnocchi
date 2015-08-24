@@ -18,7 +18,7 @@ class NocBlockFirFilterBuilder(builder.Builder):
         n_coefficients = 21
         # The simple_fir_builder specifies the Xilinx IP block.
         simple_fir_builder = FirCompilerBuilder({
-            'module_name': 'simple_fir',
+            'module_name': 'axi_fir',
             'n_taps': n_coefficients,
         })
         # The constants are useful for tests that need to know these values.
