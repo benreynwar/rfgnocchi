@@ -1,0 +1,4 @@
+*.py    text
+*.vhd   text
+*.vhd.t text
+*.txt   text
